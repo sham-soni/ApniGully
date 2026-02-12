@@ -30,7 +30,7 @@ export class HelpersController {
   @Post()
   @ApiOperation({ summary: 'Create helper profile' })
   async createProfile(@Request() req: any, @Body() dto: CreateHelperProfileDto) {
-    return this.helpersService.createProfile(req.user.id, dto.neighborhoodId, dto);
+    return this.helpersService.createProfile(req.user.id, dto.neighborhoodId, dto as any);
   }
 
   @Get('neighborhood/:neighborhoodId')
@@ -51,7 +51,7 @@ export class HelpersController {
   @Put('me')
   @ApiOperation({ summary: 'Update my helper profile' })
   async updateProfile(@Request() req: any, @Body() dto: UpdateHelperProfileDto) {
-    return this.helpersService.updateProfile(req.user.id, dto);
+    return this.helpersService.updateProfile(req.user.id, dto as any);
   }
 
   @Get(':id/reviews')

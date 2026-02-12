@@ -16,9 +16,9 @@ export class NotificationsController {
     @Request() req: any,
     @Query('page') page = 1,
     @Query('limit') limit = 20,
-    @Query('unread') unreadOnly = false,
+    @Query('unread') unreadOnly?: string,
   ) {
-    return this.notificationsService.getNotifications(req.user.id, +page, +limit, unreadOnly === true || unreadOnly === 'true');
+    return this.notificationsService.getNotifications(req.user.id, +page, +limit, unreadOnly === 'true');
   }
 
   @Get('unread-count')

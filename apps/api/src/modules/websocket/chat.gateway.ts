@@ -46,7 +46,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       if (!this.userSockets.has(userId)) {
         this.userSockets.set(userId, new Set());
       }
-      this.userSockets.get(userId).add(client.id);
+      this.userSockets.get(userId)!.add(client.id);
 
       // Join user's chat rooms
       const chats = await this.prisma.chatParticipant.findMany({

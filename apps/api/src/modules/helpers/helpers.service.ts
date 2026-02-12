@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException, ForbiddenException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { HelperSkill, Language, VerificationStatus } from '@prisma/client';
+import { HelperSkill, Language, VerificationStatus, Prisma } from '@prisma/client';
 
 interface WeeklySchedule {
   monday: { start: string; end: string }[];
@@ -56,7 +56,7 @@ export class HelpersService {
         languages: data.languages,
         hourlyRate: data.hourlyRate,
         monthlyRate: data.monthlyRate,
-        availability: data.availability,
+        availability: data.availability as unknown as Prisma.InputJsonValue,
         bio: data.bio,
       },
       include: {
@@ -182,9 +182,14 @@ export class HelpersService {
       throw new NotFoundException('Helper profile not found');
     }
 
+    const updateData: Prisma.HelperProfileUpdateInput = {
+      ...data,
+      availability: data.availability ? (data.availability as unknown as Prisma.InputJsonValue) : undefined,
+    };
+
     return this.prisma.helperProfile.update({
       where: { userId },
-      data,
+      data: updateData,
     });
   }
 
@@ -306,7 +311,7 @@ export class HelpersService {
     const today = days[now.getDay()];
     const currentTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
 
-    const availability = profile.availability as WeeklySchedule;
+    const availability = profile.availability as unknown as WeeklySchedule;
     const todaySlots = availability[today as keyof WeeklySchedule] || [];
 
     return todaySlots.some(slot => currentTime >= slot.start && currentTime <= slot.end);

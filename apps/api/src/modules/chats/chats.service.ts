@@ -322,6 +322,10 @@ export class ChatsService {
       include: { participants: true },
     });
 
+    if (!chat) {
+      throw new NotFoundException('Chat not found');
+    }
+
     const otherParticipant = chat.participants.find((p) => p.userId !== userId);
     if (otherParticipant) {
       await this.prisma.chatParticipant.update({
@@ -378,7 +382,7 @@ export class ChatsService {
   }
 
   async syncOfflineMessages(userId: string, messages: any[]) {
-    const results = [];
+    const results: Array<{ localId: string; serverId?: string; status: string; error?: string }> = [];
 
     for (const msgData of messages) {
       try {
@@ -392,7 +396,7 @@ export class ChatsService {
           serverId: message.id,
           status: 'synced',
         });
-      } catch (error) {
+      } catch (error: any) {
         results.push({
           localId: msgData.localId,
           status: 'failed',

@@ -151,7 +151,7 @@ export class PostsService {
 
     // Check if user has saved this post
     let isSaved = false;
-    let userReaction = null;
+    let userReaction: string | null = null;
     if (userId) {
       const [savedPost, reaction] = await Promise.all([
         this.prisma.savedPost.findUnique({
@@ -162,7 +162,7 @@ export class PostsService {
         }),
       ]);
       isSaved = !!savedPost;
-      userReaction = reaction?.type;
+      userReaction = reaction?.type ?? null;
     }
 
     return { ...post, isSaved, userReaction };
@@ -491,7 +491,7 @@ export class PostsService {
   }
 
   async syncOfflinePosts(userId: string, posts: any[]) {
-    const results = [];
+    const results: Array<{ localId: string; serverId?: string; status: string; error?: string }> = [];
 
     for (const postData of posts) {
       try {
@@ -500,7 +500,7 @@ export class PostsService {
           syncStatus: 'synced',
         });
         results.push({ localId: postData.localId, serverId: post.id, status: 'synced' });
-      } catch (error) {
+      } catch (error: any) {
         results.push({
           localId: postData.localId,
           status: 'failed',

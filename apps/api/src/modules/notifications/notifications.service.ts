@@ -137,7 +137,7 @@ export class NotificationsService {
     data?: Record<string, string>,
     excludeUserId?: string,
   ) {
-    const members = await this.prisma.neighborhoodMember.findMany({
+    const members = await this.prisma.membership.findMany({
       where: { neighborhoodId },
       include: {
         user: { select: { id: true, pushToken: true } },
