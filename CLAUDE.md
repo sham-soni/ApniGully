@@ -4,6 +4,22 @@
 
 ApniGully is a micro-community platform for Indian neighborhoods. It's a full-stack monorepo with NestJS API, Next.js web app, and React Native mobile app.
 
+## IMPORTANT: Fixed Port Configuration
+
+**In development mode, ALWAYS use these exact ports. NEVER change or switch them:**
+
+| Service | Port | URL |
+|---------|------|-----|
+| **API (NestJS)** | 4000 | http://localhost:4000 |
+| **Web (Next.js)** | 3000 | http://localhost:3000 |
+| **PostgreSQL** | 5555 | localhost:5555 |
+| **Redis** | 6379 | localhost:6379 |
+
+- The web app expects the API at port 4000
+- The mobile app expects the API at port 4000
+- Environment variables are configured for these ports
+- **Do not suggest or use alternative ports**
+
 ## Repository Structure
 
 ```
