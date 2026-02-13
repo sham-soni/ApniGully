@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetcher, apiClient } from '@/lib/api';
+import { fetcher, api } from '@/lib/api';
 import { formatTimeAgo } from '@apnigully/shared';
 import { ArrowLeft, Send, Phone, MoreVertical, Check, CheckCheck, Image, Paperclip } from 'lucide-react';
 import { io, Socket } from 'socket.io-client';
@@ -82,7 +82,7 @@ export default function ChatPage() {
     setIsSending(true);
 
     try {
-      await apiClient.post(`/chats/${chatId}/messages`, { content });
+      await api.post(`/chats/${chatId}/messages`, { content });
       mutate();
     } catch (error) {
       console.error('Failed to send message:', error);

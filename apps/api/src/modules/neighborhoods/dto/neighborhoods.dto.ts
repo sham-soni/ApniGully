@@ -26,28 +26,31 @@ export class CreateNeighborhoodDto {
   @MaxLength(100)
   city: string;
 
-  @ApiProperty({ example: 'Maharashtra' })
+  @ApiPropertyOptional({ example: 'Maharashtra' })
   @IsString()
   @MinLength(2)
   @MaxLength(100)
-  state: string;
+  @IsOptional()
+  state?: string;
 
   @ApiProperty({ example: '400050' })
   @IsString()
   @Matches(/^\d{6}$/, { message: 'Invalid pincode' })
   pincode: string;
 
-  @ApiProperty({ example: 19.0596 })
+  @ApiPropertyOptional({ example: 19.0596 })
   @IsNumber()
   @Min(-90)
   @Max(90)
-  latitude: number;
+  @IsOptional()
+  latitude?: number;
 
-  @ApiProperty({ example: 72.8295 })
+  @ApiPropertyOptional({ example: 72.8295 })
   @IsNumber()
   @Min(-180)
   @Max(180)
-  longitude: number;
+  @IsOptional()
+  longitude?: number;
 
   @ApiPropertyOptional({ example: 500, description: 'Radius in meters' })
   @IsNumber()

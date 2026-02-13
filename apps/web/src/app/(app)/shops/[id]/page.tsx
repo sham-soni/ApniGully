@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetcher, apiClient } from '@/lib/api';
+import { fetcher, api } from '@/lib/api';
 import { formatTimeAgo, formatINR } from '@apnigully/shared';
 import {
   ArrowLeft,
@@ -38,7 +38,7 @@ export default function ShopDetailPage() {
 
     setIsContacting(true);
     try {
-      const response = await apiClient.post('/chats', {
+      const response = await api.post('/chats', {
         participantId: data.data.ownerId,
         shopId: shopId,
       });

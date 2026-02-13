@@ -3,10 +3,27 @@
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
+import dynamic from 'next/dynamic';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetcher, apiClient } from '@/lib/api';
-import { MapPin, Search, Plus, ArrowRight, Home, Users, Shield } from 'lucide-react';
+import { fetcher, api } from '@/lib/api';
+import { MapPin, Search, Plus, ArrowRight, Home, Users, Shield, ArrowLeft } from 'lucide-react';
 import toast from 'react-hot-toast';
+
+// Dynamic import to avoid SSR issues with Google Maps
+const MapLocationPicker = dynamic(
+  () => import('@/components/MapLocationPicker'),
+  { ssr: false, loading: () => <div className="h-64 bg-neutral-100 rounded-xl animate-pulse" /> }
+);
+
+interface LocationData {
+  latitude: number;
+  longitude: number;
+  address: string;
+  city: string;
+  state: string;
+  pincode: string;
+  formattedAddress: string;
+}
 
 export default function NeighborhoodOnboardingPage() {
   const router = useRouter();
@@ -17,6 +34,7 @@ export default function NeighborhoodOnboardingPage() {
   const [selectedNeighborhood, setSelectedNeighborhood] = useState<any>(null);
   const [inviteCode, setInviteCode] = useState(searchParams.get('code') || '');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [locationSelected, setLocationSelected] = useState(false);
 
   // Form state for creating neighborhood
   const [createForm, setCreateForm] = useState({
@@ -24,12 +42,12 @@ export default function NeighborhoodOnboardingPage() {
     city: '',
     state: '',
     pincode: '',
-    description: '',
-    boundary: '',
+    latitude: 0,
+    longitude: 0,
   });
 
   const { data: neighborhoods } = useSWR(
-    searchQuery.length >= 2 ? `/neighborhoods?search=${searchQuery}` : null,
+    searchQuery.length >= 2 ? `/neighborhoods/search/name?q=${searchQuery}` : null,
     fetcher
   );
 
@@ -40,16 +58,28 @@ export default function NeighborhoodOnboardingPage() {
     }
   }, []);
 
+  const handleLocationSelect = (location: LocationData) => {
+    setCreateForm({
+      ...createForm,
+      city: location.city || createForm.city,
+      state: location.state || createForm.state,
+      pincode: location.pincode || createForm.pincode,
+      latitude: location.latitude,
+      longitude: location.longitude,
+    });
+    setLocationSelected(true);
+  };
+
   const handleJoinWithCode = async () => {
     if (!inviteCode.trim()) return;
 
     setIsSubmitting(true);
     try {
-      const response = await apiClient.post('/neighborhoods/join', { inviteCode });
+      await api.post('/neighborhoods/join/invite', { inviteCode });
       toast.success('Successfully joined neighborhood!');
       router.push('/feed');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Invalid invite code');
+      toast.error(error.message || 'Invalid invite code');
     } finally {
       setIsSubmitting(false);
     }
@@ -60,29 +90,39 @@ export default function NeighborhoodOnboardingPage() {
 
     setIsSubmitting(true);
     try {
-      await apiClient.post(`/neighborhoods/${selectedNeighborhood.id}/join`);
+      await api.post(`/neighborhoods/${selectedNeighborhood.id}/join`);
       toast.success('Join request sent! Waiting for approval.');
       router.push('/feed');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to join');
+      toast.error(error.message || 'Failed to join');
     } finally {
       setIsSubmitting(false);
     }
   };
 
   const handleCreateNeighborhood = async () => {
-    if (!createForm.name || !createForm.city || !createForm.pincode) {
-      toast.error('Please fill in required fields');
+    if (!createForm.name.trim()) {
+      toast.error('Please enter a neighborhood name');
+      return;
+    }
+
+    if (!locationSelected && !createForm.city) {
+      toast.error('Please select a location on the map');
+      return;
+    }
+
+    if (!createForm.pincode || createForm.pincode.length !== 6) {
+      toast.error('Please enter a valid 6-digit pincode');
       return;
     }
 
     setIsSubmitting(true);
     try {
-      const response = await apiClient.post('/neighborhoods', createForm);
+      await api.post('/neighborhoods', createForm);
       toast.success('Neighborhood created! You are now the admin.');
       router.push('/feed');
     } catch (error: any) {
-      toast.error(error.response?.data?.message || 'Failed to create neighborhood');
+      toast.error(error.message || 'Failed to create neighborhood');
     } finally {
       setIsSubmitting(false);
     }
@@ -114,12 +154,12 @@ export default function NeighborhoodOnboardingPage() {
               onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
               placeholder="Enter 8-digit code"
               maxLength={8}
-              className="input flex-1 uppercase tracking-wider"
+              className="flex-1 px-4 py-2 border border-neutral-200 rounded-lg uppercase tracking-wider focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
             />
             <button
               onClick={handleJoinWithCode}
               disabled={inviteCode.length !== 8 || isSubmitting}
-              className="btn btn-primary"
+              className="px-4 py-2 bg-primary-500 text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-600 transition-colors"
             >
               Join
             </button>
@@ -169,13 +209,13 @@ export default function NeighborhoodOnboardingPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search by name, area, or pincode..."
-                className="input pl-10"
+                className="w-full pl-10 pr-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
               />
             </div>
 
             {/* Search Results */}
             <div className="space-y-2">
-              {neighborhoods?.data?.map((neighborhood: any) => (
+              {neighborhoods?.map((neighborhood: any) => (
                 <button
                   key={neighborhood.id}
                   onClick={() => {
@@ -192,12 +232,12 @@ export default function NeighborhoodOnboardingPage() {
                     <div>
                       <h3 className="font-medium text-neutral-900">{neighborhood.name}</h3>
                       <p className="text-sm text-neutral-500">
-                        {neighborhood.city}, {neighborhood.state} - {neighborhood.pincode}
+                        {neighborhood.city}{neighborhood.state ? `, ${neighborhood.state}` : ''} - {neighborhood.pincode}
                       </p>
                       <div className="flex items-center gap-4 mt-1 text-xs text-neutral-400">
                         <span className="flex items-center gap-1">
                           <Users className="w-3 h-3" />
-                          {neighborhood._count?.members || 0} members
+                          {neighborhood.memberCount || 0} members
                         </span>
                         {neighborhood.isVerified && (
                           <span className="flex items-center gap-1 text-primary-500">
@@ -212,12 +252,12 @@ export default function NeighborhoodOnboardingPage() {
                 </button>
               ))}
 
-              {searchQuery.length >= 2 && neighborhoods?.data?.length === 0 && (
+              {searchQuery.length >= 2 && neighborhoods?.length === 0 && (
                 <div className="text-center py-8">
                   <p className="text-neutral-500 mb-4">No neighborhoods found</p>
                   <button
                     onClick={() => setStep('create')}
-                    className="btn btn-primary"
+                    className="inline-flex items-center px-4 py-2 bg-primary-500 text-white rounded-lg font-medium hover:bg-primary-600 transition-colors"
                   >
                     <Plus className="w-4 h-4 mr-2" />
                     Create Your Gully
@@ -238,6 +278,17 @@ export default function NeighborhoodOnboardingPage() {
         {/* Join Step */}
         {step === 'join' && selectedNeighborhood && (
           <div className="bg-white rounded-xl p-6 shadow-sm">
+            <button
+              onClick={() => {
+                setSelectedNeighborhood(null);
+                setStep('search');
+              }}
+              className="flex items-center text-neutral-500 hover:text-neutral-700 mb-4"
+            >
+              <ArrowLeft className="w-4 h-4 mr-1" />
+              Back to search
+            </button>
+
             <div className="text-center mb-6">
               <div className="w-20 h-20 bg-primary-100 rounded-full flex items-center justify-center mx-auto mb-4">
                 <MapPin className="w-10 h-10 text-primary-600" />
@@ -246,49 +297,34 @@ export default function NeighborhoodOnboardingPage() {
                 {selectedNeighborhood.name}
               </h2>
               <p className="text-neutral-500">
-                {selectedNeighborhood.city}, {selectedNeighborhood.state}
+                {selectedNeighborhood.city}{selectedNeighborhood.state ? `, ${selectedNeighborhood.state}` : ''}
               </p>
             </div>
 
             <div className="space-y-4 mb-6">
               <div className="flex items-center justify-between py-3 border-b border-neutral-100">
                 <span className="text-neutral-500">Members</span>
-                <span className="font-medium">{selectedNeighborhood._count?.members || 0}</span>
+                <span className="font-medium">{selectedNeighborhood.memberCount || 0}</span>
               </div>
               <div className="flex items-center justify-between py-3 border-b border-neutral-100">
-                <span className="text-neutral-500">Posts this week</span>
-                <span className="font-medium">{selectedNeighborhood._count?.posts || 0}</span>
+                <span className="text-neutral-500">Pincode</span>
+                <span className="font-medium">{selectedNeighborhood.pincode}</span>
               </div>
               <div className="flex items-center justify-between py-3">
                 <span className="text-neutral-500">Status</span>
-                <span className="badge badge-primary">
+                <span className="px-2 py-1 bg-primary-100 text-primary-700 text-xs font-medium rounded-full">
                   {selectedNeighborhood.isVerified ? 'Verified' : 'Community'}
                 </span>
               </div>
             </div>
 
-            {selectedNeighborhood.description && (
-              <p className="text-sm text-neutral-600 mb-6">
-                {selectedNeighborhood.description}
-              </p>
-            )}
-
             <div className="space-y-3">
               <button
                 onClick={handleJoinNeighborhood}
                 disabled={isSubmitting}
-                className="btn btn-primary w-full"
+                className="w-full py-3 bg-primary-500 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-600 transition-colors"
               >
                 {isSubmitting ? 'Requesting...' : 'Request to Join'}
-              </button>
-              <button
-                onClick={() => {
-                  setSelectedNeighborhood(null);
-                  setStep('search');
-                }}
-                className="btn btn-secondary w-full"
-              >
-                Choose Different Gully
               </button>
             </div>
 
@@ -306,10 +342,14 @@ export default function NeighborhoodOnboardingPage() {
               Create Your Gully
             </h2>
             <p className="text-sm text-neutral-500 mb-6">
-              Start a new neighborhood community
+              Select your neighborhood location on the map
             </p>
 
-            <div className="space-y-4">
+            <div className="space-y-6">
+              {/* Map Location Picker */}
+              <MapLocationPicker onLocationSelect={handleLocationSelect} />
+
+              {/* Neighborhood Name */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Neighborhood Name *
@@ -318,82 +358,92 @@ export default function NeighborhoodOnboardingPage() {
                   type="text"
                   value={createForm.name}
                   onChange={(e) => setCreateForm({ ...createForm, name: e.target.value })}
-                  placeholder="e.g., Sunshine Apartments, Green Valley"
-                  className="input"
+                  placeholder="e.g., Sunshine Apartments, Green Valley Society"
+                  className="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    City *
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.city}
-                    onChange={(e) => setCreateForm({ ...createForm, city: e.target.value })}
-                    placeholder="Mumbai"
-                    className="input"
-                  />
+              {/* Auto-filled Location Details */}
+              {locationSelected && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      City
+                    </label>
+                    <input
+                      type="text"
+                      value={createForm.city}
+                      onChange={(e) => setCreateForm({ ...createForm, city: e.target.value })}
+                      className="w-full px-4 py-3 border border-neutral-200 rounded-xl bg-neutral-50 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      Pincode
+                    </label>
+                    <input
+                      type="text"
+                      value={createForm.pincode}
+                      onChange={(e) => setCreateForm({ ...createForm, pincode: e.target.value })}
+                      maxLength={6}
+                      className="w-full px-4 py-3 border border-neutral-200 rounded-xl bg-neutral-50 focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                    />
+                  </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    State
-                  </label>
-                  <input
-                    type="text"
-                    value={createForm.state}
-                    onChange={(e) => setCreateForm({ ...createForm, state: e.target.value })}
-                    placeholder="Maharashtra"
-                    className="input"
-                  />
+              )}
+
+              {/* Manual Entry Fallback */}
+              {!locationSelected && (
+                <div className="border-t border-neutral-200 pt-4">
+                  <p className="text-sm text-neutral-500 mb-4">
+                    Or enter details manually if map is not available:
+                  </p>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        City *
+                      </label>
+                      <input
+                        type="text"
+                        value={createForm.city}
+                        onChange={(e) => setCreateForm({ ...createForm, city: e.target.value })}
+                        placeholder="Mumbai"
+                        className="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-medium text-neutral-700 mb-1">
+                        Pincode *
+                      </label>
+                      <input
+                        type="text"
+                        value={createForm.pincode}
+                        onChange={(e) => setCreateForm({ ...createForm, pincode: e.target.value })}
+                        placeholder="400001"
+                        maxLength={6}
+                        className="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="mt-4">
+                    <label className="block text-sm font-medium text-neutral-700 mb-1">
+                      State
+                    </label>
+                    <input
+                      type="text"
+                      value={createForm.state}
+                      onChange={(e) => setCreateForm({ ...createForm, state: e.target.value })}
+                      placeholder="Maharashtra"
+                      className="w-full px-4 py-3 border border-neutral-200 rounded-xl focus:ring-2 focus:ring-primary-500 focus:border-primary-500 outline-none"
+                    />
+                  </div>
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Pincode *
-                </label>
-                <input
-                  type="text"
-                  value={createForm.pincode}
-                  onChange={(e) => setCreateForm({ ...createForm, pincode: e.target.value })}
-                  placeholder="400001"
-                  maxLength={6}
-                  className="input"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Description
-                </label>
-                <textarea
-                  value={createForm.description}
-                  onChange={(e) => setCreateForm({ ...createForm, description: e.target.value })}
-                  placeholder="Tell people about your neighborhood..."
-                  rows={3}
-                  className="input resize-none"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Boundary/Landmark
-                </label>
-                <input
-                  type="text"
-                  value={createForm.boundary}
-                  onChange={(e) => setCreateForm({ ...createForm, boundary: e.target.value })}
-                  placeholder="e.g., Between Main Road and Park Street"
-                  className="input"
-                />
-              </div>
+              )}
 
               <button
                 onClick={handleCreateNeighborhood}
-                disabled={isSubmitting || !createForm.name || !createForm.city || !createForm.pincode}
-                className="btn btn-primary w-full mt-4"
+                disabled={isSubmitting || !createForm.name}
+                className="w-full py-3 bg-primary-500 text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-primary-600 transition-colors"
               >
                 {isSubmitting ? 'Creating...' : 'Create Neighborhood'}
               </button>

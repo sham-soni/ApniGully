@@ -162,7 +162,14 @@ PORT=4000
 ```
 NEXT_PUBLIC_API_URL=http://localhost:4000/api/v1
 NEXT_PUBLIC_WS_URL=http://localhost:4000
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ```
+
+**Google Maps Setup:**
+1. Go to [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+2. Create a new API key
+3. Enable these APIs: Maps JavaScript API, Places API, Geocoding API
+4. Add the key to `apps/web/.env.local`
 
 ## Feature Flags
 

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetcher, apiClient } from '@/lib/api';
+import { fetcher, api } from '@/lib/api';
 import { formatTimeAgo } from '@apnigully/shared';
 import {
   ArrowLeft,
@@ -55,7 +55,7 @@ export default function NotificationsPage() {
 
   const handleMarkAllRead = async () => {
     try {
-      await apiClient.post('/notifications/mark-all-read');
+      await api.post('/notifications/mark-all-read');
       mutate();
       toast.success('All notifications marked as read');
     } catch (error) {
@@ -65,7 +65,7 @@ export default function NotificationsPage() {
 
   const handleMarkRead = async (id: string) => {
     try {
-      await apiClient.post(`/notifications/${id}/read`);
+      await api.post(`/notifications/${id}/read`);
       mutate();
     } catch (error) {
       console.error('Failed to mark as read:', error);
@@ -74,7 +74,7 @@ export default function NotificationsPage() {
 
   const handleDelete = async (id: string) => {
     try {
-      await apiClient.delete(`/notifications/${id}`);
+      await api.delete(`/notifications/${id}`);
       mutate();
       toast.success('Notification deleted');
     } catch (error) {

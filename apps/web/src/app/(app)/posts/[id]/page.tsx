@@ -5,7 +5,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetcher, apiClient } from '@/lib/api';
+import { fetcher, api } from '@/lib/api';
 import { formatTimeAgo, POST_TYPE_CONFIG } from '@apnigully/shared';
 import {
   ArrowLeft,
@@ -39,7 +39,7 @@ export default function PostDetailPage() {
     }
 
     try {
-      await apiClient.post(`/posts/${postId}/reactions`, { type: 'like' });
+      await api.post(`/posts/${postId}/reactions`, { type: 'like' });
       mutate();
     } catch (error) {
       console.error('Reaction failed:', error);
@@ -51,7 +51,7 @@ export default function PostDetailPage() {
 
     setIsSubmitting(true);
     try {
-      await apiClient.post(`/posts/${postId}/comments`, { content: comment.trim() });
+      await api.post(`/posts/${postId}/comments`, { content: comment.trim() });
       setComment('');
       mutate();
       toast.success('Comment added');
@@ -69,7 +69,7 @@ export default function PostDetailPage() {
     if (!reason) return;
 
     try {
-      await apiClient.post('/reports', {
+      await api.post('/reports', {
         targetType: 'post',
         targetId: postId,
         reason,

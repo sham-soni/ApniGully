@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
-import { fetcher, apiClient } from '@/lib/api';
+import { fetcher, api } from '@/lib/api';
 import { formatTimeAgo, getTrustLevel } from '@apnigully/shared';
 import {
   ArrowLeft,
@@ -39,7 +39,7 @@ export default function HelperProfilePage() {
 
     setIsContacting(true);
     try {
-      const response = await apiClient.post('/chats', {
+      const response = await api.post('/chats', {
         participantId: data.data.userId,
         helperProfileId: helperId,
       });
@@ -58,7 +58,7 @@ export default function HelperProfilePage() {
     }
 
     try {
-      await apiClient.post(`/helpers/${helperId}/endorse`);
+      await api.post(`/helpers/${helperId}/endorse`);
       toast.success('Endorsement added!');
     } catch (error: any) {
       toast.error(error.response?.data?.message || 'Failed to endorse');

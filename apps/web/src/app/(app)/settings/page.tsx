@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import { useTheme } from '@/contexts/ThemeContext';
-import { apiClient } from '@/lib/api';
+import { api } from '@/lib/api';
 import {
   ArrowLeft,
   User,
@@ -52,7 +52,7 @@ export default function SettingsPage() {
     }
 
     try {
-      await apiClient.delete('/users/me');
+      await api.delete('/users/me');
       toast.success('Account deleted');
       logout();
       router.push('/login');

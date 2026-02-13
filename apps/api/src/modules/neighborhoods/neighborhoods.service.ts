@@ -10,10 +10,10 @@ export class NeighborhoodsService {
   async create(userId: string, data: {
     name: string;
     city: string;
-    state: string;
+    state?: string;
     pincode: string;
-    latitude: number;
-    longitude: number;
+    latitude?: number;
+    longitude?: number;
     radius?: number;
   }) {
     const slug = generateSlug(data.name + '-' + data.city);
@@ -21,7 +21,12 @@ export class NeighborhoodsService {
 
     const neighborhood = await this.prisma.neighborhood.create({
       data: {
-        ...data,
+        name: data.name,
+        city: data.city,
+        state: data.state || '',
+        pincode: data.pincode,
+        latitude: data.latitude ?? 0,
+        longitude: data.longitude ?? 0,
         slug,
         inviteCode,
         radius: data.radius || 500,
