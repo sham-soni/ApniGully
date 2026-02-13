@@ -12,6 +12,7 @@ const nextConfig = {
     domains: ['localhost', 'apnigully-uploads.s3.amazonaws.com'],
   },
   transpilePackages: ['@apnigully/shared', '@apnigully/ui'],
+  turbopack: {},
 };
 
 module.exports = withPWA(nextConfig);

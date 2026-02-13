@@ -9,6 +9,9 @@ export class AuthService {
   private readonly MAX_OTP_ATTEMPTS = 3;
   private readonly OTP_RATE_LIMIT = 5; // per hour
 
+  // TESTING MODE: Set to true to bypass OTP verification
+  private readonly SKIP_OTP_VERIFICATION = true;
+
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
@@ -66,39 +69,44 @@ export class AuthService {
     user: any;
     isNewUser: boolean;
   }> {
-    // Find the most recent unused OTP for this phone
-    const otpRequest = await this.prisma.otpRequest.findFirst({
-      where: {
-        phone,
-        isUsed: false,
-        expiresAt: { gt: new Date() },
-      },
-      orderBy: { createdAt: 'desc' },
-    });
+    // TESTING MODE: Skip OTP verification entirely
+    if (!this.SKIP_OTP_VERIFICATION) {
+      // Find the most recent unused OTP for this phone
+      const otpRequest = await this.prisma.otpRequest.findFirst({
+        where: {
+          phone,
+          isUsed: false,
+          expiresAt: { gt: new Date() },
+        },
+        orderBy: { createdAt: 'desc' },
+      });
 
-    if (!otpRequest) {
-      throw new UnauthorizedException('OTP expired or not found');
-    }
+      if (!otpRequest) {
+        throw new UnauthorizedException('OTP expired or not found');
+      }
 
-    // Check attempts
-    if (otpRequest.attempts >= this.MAX_OTP_ATTEMPTS) {
-      throw new UnauthorizedException('Maximum OTP attempts exceeded');
-    }
+      // Check attempts
+      if (otpRequest.attempts >= this.MAX_OTP_ATTEMPTS) {
+        throw new UnauthorizedException('Maximum OTP attempts exceeded');
+      }
 
-    // Verify OTP
-    if (otpRequest.otp !== otp) {
+      // Verify OTP
+      if (otpRequest.otp !== otp) {
+        await this.prisma.otpRequest.update({
+          where: { id: otpRequest.id },
+          data: { attempts: { increment: 1 } },
+        });
+        throw new UnauthorizedException('Invalid OTP');
+      }
+
+      // Mark OTP as used
       await this.prisma.otpRequest.update({
         where: { id: otpRequest.id },
-        data: { attempts: { increment: 1 } },
+        data: { isUsed: true },
       });
-      throw new UnauthorizedException('Invalid OTP');
+    } else {
+      console.log(`[TESTING MODE] Skipping OTP verification for ${phone}`);
     }
-
-    // Mark OTP as used
-    await this.prisma.otpRequest.update({
-      where: { id: otpRequest.id },
-      data: { isUsed: true },
-    });
 
     // Find or create user
     let user = await this.prisma.user.findUnique({
