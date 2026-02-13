@@ -12,10 +12,10 @@ import { JwtAuthGuard } from './jwt-auth.guard';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
+      useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') || 'apnigully-secret-key',
         signOptions: {
-          expiresIn: configService.get<string>('JWT_EXPIRY') || '7d',
+          expiresIn: (configService.get<string>('JWT_EXPIRY') || '7d') as any,
         },
       }),
       inject: [ConfigService],
