@@ -6,7 +6,17 @@ import Link from 'next/link';
 import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetcher, api } from '@/lib/api';
-import { formatTimeAgo, POST_TYPE_CONFIG } from '@apnigully/shared';
+import { formatTimeAgo, POST_TYPE_LABELS } from '@apnigully/shared';
+
+const POST_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
+  update: { label: 'Update', color: 'bg-blue-100 text-blue-700' },
+  alert: { label: 'Alert', color: 'bg-red-100 text-red-700' },
+  event: { label: 'Event', color: 'bg-purple-100 text-purple-700' },
+  recommendation: { label: 'Recommendation', color: 'bg-green-100 text-green-700' },
+  question: { label: 'Question', color: 'bg-yellow-100 text-yellow-700' },
+  rental: { label: 'Rental', color: 'bg-orange-100 text-orange-700' },
+  lost_found: { label: 'Lost & Found', color: 'bg-pink-100 text-pink-700' },
+};
 import {
   ArrowLeft,
   Heart,

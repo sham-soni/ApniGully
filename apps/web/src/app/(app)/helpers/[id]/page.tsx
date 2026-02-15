@@ -5,7 +5,14 @@ import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetcher, api } from '@/lib/api';
-import { formatTimeAgo, getTrustLevel } from '@apnigully/shared';
+import { formatTimeAgo } from '@apnigully/shared';
+
+function getTrustLevel(score: number) {
+  if (score >= 80) return { label: 'Highly Trusted', color: 'text-green-600' };
+  if (score >= 50) return { label: 'Trusted', color: 'text-blue-600' };
+  if (score >= 20) return { label: 'Building Trust', color: 'text-yellow-600' };
+  return { label: 'New', color: 'text-neutral-500' };
+}
 import {
   ArrowLeft,
   Star,

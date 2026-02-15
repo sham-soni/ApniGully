@@ -5,7 +5,11 @@ import { useParams, useRouter } from 'next/navigation';
 import useSWR from 'swr';
 import { useAuth } from '@/contexts/AuthContext';
 import { fetcher, api } from '@/lib/api';
-import { formatTimeAgo, formatINR } from '@apnigully/shared';
+import { formatTimeAgo } from '@apnigully/shared';
+
+function formatINR(amount: number) {
+  return '₹' + amount.toLocaleString('en-IN');
+}
 import {
   ArrowLeft,
   Star,
