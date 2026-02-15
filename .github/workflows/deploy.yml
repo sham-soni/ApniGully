@@ -27,12 +27,17 @@ jobs:
             cd ~/ApniGully
             git pull origin master
             ./deploy.sh
-            # Setup SSL if not already done
-            if [ ! -f /etc/letsencrypt/live/gullywale.com/fullchain.pem ]; then
+            # Check SSL cert status
+            echo "=== Checking SSL status ==="
+            docker exec apnigully-nginx ls -la /etc/letsencrypt/live/gullywale.com/ 2>/dev/null || echo "No SSL certs found in container"
+            docker exec apnigully-nginx nginx -t 2>&1 || echo "Nginx config test failed"
+            # Setup SSL if certs not in container
+            if ! docker exec apnigully-nginx test -f /etc/letsencrypt/live/gullywale.com/fullchain.pem 2>/dev/null; then
               echo "Setting up SSL certificates..."
               chmod +x setup-ssl.sh
               ./setup-ssl.sh admin@gullywale.com
             else
-              echo "SSL certificates already exist"
+              echo "SSL certificates exist, reloading nginx..."
+              docker exec apnigully-nginx nginx -s reload || true
             fi
             echo "Deployment successful! Site: https://gullywale.com"
