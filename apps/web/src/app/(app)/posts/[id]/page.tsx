@@ -30,7 +30,7 @@ export default function PostDetailPage() {
   const [showMenu, setShowMenu] = useState(false);
 
   const postId = params.id as string;
-  const { data, mutate, error } = useSWR(`/posts/${postId}`, fetcher);
+  const { data, mutate, error } = useSWR(`/posts/${postId}`, fetcher) as { data: { data: any } | undefined; mutate: any; error: any };
 
   const handleReaction = async () => {
     if (!user) {

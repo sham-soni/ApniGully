@@ -28,7 +28,7 @@ export default function ShopDetailPage() {
   const [isContacting, setIsContacting] = useState(false);
 
   const shopId = params.id as string;
-  const { data, error } = useSWR(`/shops/${shopId}`, fetcher);
+  const { data, error } = useSWR(`/shops/${shopId}`, fetcher) as { data: { data: any } | undefined; error: any };
 
   const handleContact = async () => {
     if (!user) {

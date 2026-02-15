@@ -13,7 +13,7 @@ export default function InboxPage() {
   const { user, token } = useAuth();
   const [socket, setSocket] = useState<Socket | null>(null);
 
-  const { data, mutate } = useSWR('/chats', fetcher);
+  const { data, mutate } = useSWR('/chats', fetcher) as { data: { data: any[] } | undefined; mutate: any };
 
   // WebSocket connection
   useEffect(() => {
