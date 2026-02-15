@@ -44,14 +44,13 @@ jobs:
             ./deploy.sh
             docker ps
 
-            # Diagnostics
-            echo "=== Checking ports ==="
-            sudo netstat -tlnp | grep -E "80|443" || ss -tlnp | grep -E "80|443"
-            echo "=== Checking firewall ==="
-            sudo ufw status 2>/dev/null || echo "ufw not installed"
-            sudo iptables -L INPUT -n 2>/dev/null | head -10 || echo "iptables check failed"
-            echo "=== Testing local ==="
-            curl -I http://localhost 2>&1 | head -5
+            # Check nginx logs
+            echo "=== Nginx container logs ==="
+            docker logs apnigully-nginx --tail 30 2>&1
+            echo "=== All containers ==="
+            docker ps -a
+            echo "=== Ports ==="
+            ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
