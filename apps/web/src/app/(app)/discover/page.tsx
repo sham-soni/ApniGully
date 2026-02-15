@@ -32,7 +32,7 @@ export default function DiscoverPage() {
 
   const neighborhoodId = user?.memberships?.[0]?.neighborhoodId;
 
-  const { data, isLoading } = useSWR(
+  const { data, isLoading } = useSWR<{ data: any[] }>(
     neighborhoodId ? `/${activeTab}/neighborhood/${neighborhoodId}` : null,
     fetcher
   );
