@@ -32,12 +32,29 @@ jobs:
             cd $HOME/ApniGully
             git pull origin master
 
-            # Check if .env.production exists
+            # Create .env.production if not exists
             if [ ! -f .env.production ]; then
-              echo "ERROR: .env.production not found. Creating from example..."
-              cp .env.production.example .env.production
-              echo "Please edit .env.production with your actual values!"
-              exit 1
+              echo "Creating .env.production..."
+              cat > .env.production << 'ENVEOF'
+# Database
+POSTGRES_USER=apnigully
+POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
+POSTGRES_DB=apnigully
+
+# JWT
+JWT_SECRET=${{ secrets.JWT_SECRET }}
+JWT_EXPIRY=7d
+
+# CORS & URLs
+CORS_ORIGINS=https://gullywale.com,http://gullywale.com
+NEXT_PUBLIC_API_URL=https://gullywale.com/api/v1
+NEXT_PUBLIC_WS_URL=https://gullywale.com
+
+# MinIO
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=${{ secrets.MINIO_PASSWORD }}
+ENVEOF
+              echo ".env.production created"
             fi
 
             chmod +x deploy.sh setup-ssl.sh
