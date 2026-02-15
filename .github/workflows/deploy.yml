@@ -42,6 +42,11 @@ jobs:
             # Use HTTP-only nginx config (no SSL certs yet)
             cp nginx/nginx-init.conf nginx/nginx.conf
 
+            # Reset postgres with new credentials (one-time fix)
+            docker stop apnigully-postgres 2>/dev/null || true
+            docker rm apnigully-postgres 2>/dev/null || true
+            docker volume rm apnigully_postgres_data 2>/dev/null || true
+
             chmod +x deploy.sh
             ./deploy.sh
 
