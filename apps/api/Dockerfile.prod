@@ -1,5 +1,7 @@
 FROM node:20-alpine AS builder
 
+RUN apk add --no-cache openssl
+
 WORKDIR /app
 
 # Copy root workspace files
@@ -24,6 +26,8 @@ RUN cd apps/api && npx prisma generate && npm run build
 
 # --- Production stage ---
 FROM node:20-alpine
+
+RUN apk add --no-cache openssl
 
 WORKDIR /app
 
