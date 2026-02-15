@@ -21,7 +21,7 @@ export default function ChatPage() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const chatId = params.chatId as string;
-  const { data, mutate } = useSWR<any>(`/chats/${chatId}`, fetcher);
+  const { data, mutate } = useSWR(`/chats/${chatId}`, fetcher) as { data: { data: any } | undefined; mutate: any };
 
   // Scroll to bottom on new messages
   useEffect(() => {

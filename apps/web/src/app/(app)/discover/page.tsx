@@ -35,7 +35,7 @@ export default function DiscoverPage() {
   const { data, isLoading } = useSWR<any>(
     neighborhoodId ? `/${activeTab}/neighborhood/${neighborhoodId}` : null,
     fetcher
-  );
+  ) as { data: { data: any[] } | undefined; isLoading: boolean };
 
   return (
     <div className="max-w-4xl mx-auto animate-fade-in">

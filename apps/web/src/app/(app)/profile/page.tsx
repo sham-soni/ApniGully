@@ -24,8 +24,8 @@ export default function ProfilePage() {
   const { user, logout } = useAuth();
   const router = useRouter();
 
-  const { data: trustData } = useSWR<any>(user ? '/users/me/trust-score' : null, fetcher);
-  const { data: endorsements } = useSWR<any>(user ? `/users/${user.id}/endorsements` : null, fetcher);
+  const { data: trustData } = useSWR(user ? '/users/me/trust-score' : null, fetcher) as { data: any };
+  const { data: endorsements } = useSWR(user ? `/users/${user.id}/endorsements` : null, fetcher) as { data: any };
 
   const handleLogout = async () => {
     try {

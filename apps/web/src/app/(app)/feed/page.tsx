@@ -51,7 +51,7 @@ export default function FeedPage() {
       ? `/posts/feed/${neighborhoodId}?${activeFilter !== 'all' ? `type=${activeFilter}` : ''}`
       : null,
     fetcher
-  );
+  ) as { data: { data: any[] } | undefined; error: any; isLoading: boolean; mutate: any };
 
   if (!neighborhoodId) {
     return (

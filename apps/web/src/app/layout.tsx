@@ -12,6 +12,9 @@ const poppins = Poppins({
   display: 'swap',
 });
 
+// Force all pages to be server-rendered (no static generation)
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: 'ApniGully - Your Neighborhood Community',
   description: 'Connect with your neighbors, find trusted helpers, discover local services, and stay updated with your community.',

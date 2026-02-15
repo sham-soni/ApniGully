@@ -50,7 +50,7 @@ const NOTIFICATION_COLORS: Record<string, string> = {
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const { data, mutate } = useSWR<any>('/notifications', fetcher);
+  const { data, mutate } = useSWR('/notifications', fetcher) as { data: { data: any[] } | undefined; mutate: any };
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
   const handleMarkAllRead = async () => {

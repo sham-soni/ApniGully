@@ -41,7 +41,7 @@ const typeColors: Record<string, string> = {
 
 export default function SavedPostsPage() {
   const { user } = useAuth();
-  const { data, isLoading, mutate } = useSWR<any>(user ? '/posts/saved' : null, fetcher);
+  const { data, isLoading, mutate } = useSWR(user ? '/posts/saved' : null, fetcher) as { data: { data: any[] } | undefined; isLoading: boolean; mutate: any };
 
   const handleUnsave = async (postId: string) => {
     try {

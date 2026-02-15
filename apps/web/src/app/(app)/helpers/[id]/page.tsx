@@ -36,7 +36,7 @@ export default function HelperProfilePage() {
   const [isContacting, setIsContacting] = useState(false);
 
   const helperId = params.id as string;
-  const { data, error } = useSWR<any>(`/helpers/${helperId}`, fetcher);
+  const { data, error } = useSWR(`/helpers/${helperId}`, fetcher) as { data: { data: any } | undefined; error: any };
 
   const handleContact = async () => {
     if (!user) {
