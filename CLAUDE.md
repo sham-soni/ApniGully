@@ -13,7 +13,6 @@ ApniGully is a micro-community platform for Indian neighborhoods. It's a full-st
 | **API (NestJS)** | 4000 | http://localhost:4000 |
 | **Web (Next.js)** | 3000 | http://localhost:3000 |
 | **PostgreSQL** | 5555 | localhost:5555 |
-| **Redis** | 6379 | localhost:6379 |
 
 - The web app expects the API at port 4000
 - The mobile app expects the API at port 4000
@@ -80,7 +79,7 @@ ApniGully/
 
 ```bash
 # Start all services
-docker-compose up -d postgres redis
+docker-compose up -d postgres
 
 # Build shared package (MUST be done before running web or mobile)
 cd packages/shared
@@ -156,7 +155,6 @@ const url = await uploadImage(file, 'posts');
 ### API (.env)
 ```
 DATABASE_URL=postgresql://postgres:postgres@localhost:5555/apnigully
-REDIS_URL=redis://localhost:6379
 JWT_SECRET=apnigully-secret-key
 JWT_EXPIRY=7d
 PORT=4000
@@ -178,7 +176,7 @@ NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=your-google-maps-api-key
 ## Feature Flags
 
 - **Dark Mode**: CSS variables in `globals.css`, ThemeContext
-- **Push Notifications**: Firebase Admin SDK (requires FIREBASE_SERVICE_ACCOUNT)
+
 - **Offline Sync**: Implemented in mobile with AsyncStorage queue
 
 ## Testing
@@ -223,7 +221,6 @@ https://github.com/sham-soni/ApniGully
 | Web | Next.js 14, React, Tailwind CSS |
 | Mobile | React Native, Expo |
 | Database | PostgreSQL |
-| Cache | Redis |
 | Storage | S3 (AWS/MinIO) |
 | Real-time | Socket.io |
 | Auth | JWT, Phone OTP |

@@ -13,6 +13,7 @@ interface FAQCategory {
   id: string;
   title: string;
   icon: any;
+  color: string;
   faqs: FAQItem[];
 }
 
@@ -21,6 +22,7 @@ const faqCategories: FAQCategory[] = [
     id: 'getting-started',
     title: 'Getting Started',
     icon: HelpCircle,
+    color: 'from-primary-500 to-primary-600',
     faqs: [
       {
         question: 'How do I create an account?',
@@ -40,6 +42,7 @@ const faqCategories: FAQCategory[] = [
     id: 'posts-interactions',
     title: 'Posts & Interactions',
     icon: MessageCircle,
+    color: 'from-secondary-500 to-secondary-600',
     faqs: [
       {
         question: 'What types of posts can I create?',
@@ -59,6 +62,7 @@ const faqCategories: FAQCategory[] = [
     id: 'helpers-services',
     title: 'Helpers & Services',
     icon: Users,
+    color: 'from-accent-500 to-accent-600',
     faqs: [
       {
         question: 'How do I find a helper?',
@@ -78,6 +82,7 @@ const faqCategories: FAQCategory[] = [
     id: 'rentals',
     title: 'Rentals',
     icon: Home,
+    color: 'from-amber-500 to-orange-500',
     faqs: [
       {
         question: 'How do I list a rental property?',
@@ -97,6 +102,7 @@ const faqCategories: FAQCategory[] = [
     id: 'safety-security',
     title: 'Safety & Security',
     icon: Shield,
+    color: 'from-rose-500 to-red-500',
     faqs: [
       {
         question: 'What should I do in an emergency?',
@@ -133,35 +139,35 @@ export default function HelpPage() {
   })).filter(category => category.faqs.length > 0 || !searchQuery);
 
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className="min-h-screen bg-[var(--bg-secondary)]">
       {/* Header */}
-      <div className="bg-white border-b border-neutral-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="bg-gradient-hero text-white">
+        <div className="max-w-4xl mx-auto px-4 py-12 animate-fade-in">
           <Link
             href="/"
-            className="inline-flex items-center gap-2 text-neutral-600 hover:text-neutral-900 mb-4"
+            className="inline-flex items-center gap-2 text-white/70 hover:text-white mb-6 press-scale-sm transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
             Back to App
           </Link>
-          <h1 className="text-3xl font-bold text-neutral-900">Help Center</h1>
-          <p className="text-neutral-600 mt-2">
+          <h1 className="text-4xl font-bold">Help Center</h1>
+          <p className="text-white/70 mt-2 text-lg">
             Find answers to common questions about ApniGully
           </p>
         </div>
       </div>
 
       {/* Search */}
-      <div className="bg-white border-b border-neutral-200">
-        <div className="max-w-4xl mx-auto px-4 py-4">
+      <div className="max-w-4xl mx-auto px-4 -mt-6">
+        <div className="card p-2 animate-slide-up">
           <div className="relative">
-            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-neutral-400" />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
             <input
               type="text"
               placeholder="Search for help..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-12 pr-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+              className="w-full pl-12 pr-4 py-3.5 bg-[var(--bg-tertiary)] border border-[var(--border-color-light)] rounded-2xl text-[var(--text-primary)] placeholder-[var(--text-muted)] focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
             />
           </div>
         </div>
@@ -170,38 +176,41 @@ export default function HelpPage() {
       {/* FAQ Categories */}
       <div className="max-w-4xl mx-auto px-4 py-8">
         {filteredCategories.length === 0 ? (
-          <div className="text-center py-12">
-            <HelpCircle className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-            <h3 className="font-medium text-neutral-900 mb-2">No results found</h3>
-            <p className="text-sm text-neutral-500">
+          <div className="text-center py-12 animate-fade-in">
+            <div className="w-16 h-16 rounded-3xl bg-[var(--bg-tertiary)] flex items-center justify-center mx-auto mb-4">
+              <HelpCircle className="w-8 h-8 text-[var(--text-muted)]" />
+            </div>
+            <h3 className="font-medium text-[var(--text-primary)] mb-2">No results found</h3>
+            <p className="text-sm text-[var(--text-muted)]">
               Try searching with different keywords
             </p>
           </div>
         ) : (
           <div className="space-y-4">
-            {filteredCategories.map((category) => (
+            {filteredCategories.map((category, catIndex) => (
               <div
                 key={category.id}
-                className="bg-white rounded-xl border border-neutral-200 overflow-hidden"
+                className="card overflow-hidden animate-slide-up"
+                style={{ animationDelay: `${catIndex * 0.05}s` }}
               >
                 {/* Category Header */}
                 <button
                   onClick={() => setExpandedCategory(
                     expandedCategory === category.id ? null : category.id
                   )}
-                  className="w-full flex items-center justify-between p-4 hover:bg-neutral-50"
+                  className="w-full flex items-center justify-between p-4 hover:bg-[var(--bg-tertiary)] transition-colors"
                 >
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
-                      <category.icon className="w-5 h-5 text-primary-600" />
+                    <div className={`w-10 h-10 rounded-2xl bg-gradient-to-br ${category.color} flex items-center justify-center`}>
+                      <category.icon className="w-5 h-5 text-white" />
                     </div>
                     <div className="text-left">
-                      <h2 className="font-semibold text-neutral-900">{category.title}</h2>
-                      <p className="text-sm text-neutral-500">{category.faqs.length} questions</p>
+                      <h2 className="font-semibold text-[var(--text-primary)]">{category.title}</h2>
+                      <p className="text-sm text-[var(--text-muted)]">{category.faqs.length} questions</p>
                     </div>
                   </div>
                   <ChevronDown
-                    className={`w-5 h-5 text-neutral-400 transition-transform ${
+                    className={`w-5 h-5 text-[var(--text-muted)] transition-transform duration-200 ${
                       expandedCategory === category.id ? 'rotate-180' : ''
                     }`}
                   />
@@ -209,29 +218,31 @@ export default function HelpPage() {
 
                 {/* FAQs */}
                 {expandedCategory === category.id && (
-                  <div className="border-t border-neutral-100">
+                  <div className="border-t border-[var(--border-color-light)]">
                     {category.faqs.map((faq, index) => {
                       const faqId = `${category.id}-${index}`;
                       return (
-                        <div key={index} className="border-b border-neutral-100 last:border-0">
+                        <div key={index} className="border-b border-[var(--border-color-light)] last:border-0">
                           <button
                             onClick={() => setExpandedFaq(expandedFaq === faqId ? null : faqId)}
-                            className="w-full flex items-center justify-between p-4 text-left hover:bg-neutral-50"
+                            className="w-full flex items-center justify-between p-4 text-left hover:bg-[var(--bg-tertiary)] transition-colors"
                           >
-                            <span className="font-medium text-neutral-900 pr-4">
+                            <span className="font-medium text-[var(--text-primary)] pr-4">
                               {faq.question}
                             </span>
                             <ChevronDown
-                              className={`w-5 h-5 text-neutral-400 flex-shrink-0 transition-transform ${
+                              className={`w-5 h-5 text-[var(--text-muted)] flex-shrink-0 transition-transform duration-200 ${
                                 expandedFaq === faqId ? 'rotate-180' : ''
                               }`}
                             />
                           </button>
                           {expandedFaq === faqId && (
-                            <div className="px-4 pb-4">
-                              <p className="text-neutral-600 leading-relaxed">
-                                {faq.answer}
-                              </p>
+                            <div className="px-4 pb-4 animate-fade-in">
+                              <div className="p-4 bg-[var(--bg-tertiary)] rounded-2xl">
+                                <p className="text-[var(--text-secondary)] leading-relaxed">
+                                  {faq.answer}
+                                </p>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -245,16 +256,19 @@ export default function HelpPage() {
         )}
 
         {/* Contact Support */}
-        <div className="mt-8 p-6 bg-primary-50 rounded-xl text-center">
-          <h3 className="font-semibold text-primary-900 mb-2">
+        <div className="mt-8 card p-8 text-center bg-gradient-to-br from-primary-500/5 to-secondary-500/5 animate-slide-up">
+          <div className="w-14 h-14 rounded-3xl bg-gradient-to-br from-primary-500 to-secondary-500 flex items-center justify-center mx-auto mb-4 shadow-glow">
+            <MessageCircle className="w-7 h-7 text-white" />
+          </div>
+          <h3 className="font-semibold text-[var(--text-primary)] text-lg mb-2">
             Still need help?
           </h3>
-          <p className="text-sm text-primary-700 mb-4">
+          <p className="text-sm text-[var(--text-muted)] mb-6 max-w-md mx-auto">
             Can't find what you're looking for? Our support team is here to help.
           </p>
           <a
             href="mailto:support@apnigully.com"
-            className="inline-flex items-center gap-2 px-6 py-2 bg-primary-500 text-white font-medium rounded-lg hover:bg-primary-600"
+            className="btn btn-primary inline-flex items-center gap-2 press-scale"
           >
             <MessageCircle className="w-4 h-4" />
             Contact Support

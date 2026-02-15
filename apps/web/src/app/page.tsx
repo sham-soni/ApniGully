@@ -23,12 +23,15 @@ export default function Home() {
   }, [user, isLoading, router]);
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-primary-500">
-      <div className="text-center text-white">
-        <h1 className="text-4xl font-bold mb-2">ApniGully</h1>
-        <p className="text-primary-100">Your Neighborhood Community</p>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-hero">
+      <div className="text-center animate-fade-in">
+        <div className="w-20 h-20 rounded-3xl bg-[var(--glass-bg)] backdrop-blur-lg border border-[var(--glass-border)] flex items-center justify-center mx-auto mb-6 shadow-glow">
+          <span className="text-4xl font-black gradient-text">A</span>
+        </div>
+        <h1 className="text-4xl font-bold text-white mb-2">ApniGully</h1>
+        <p className="text-white/70 text-lg">Your Neighborhood Community</p>
         <div className="mt-8">
-          <div className="inline-block w-8 h-8 border-4 border-white border-t-transparent rounded-full animate-spin" />
+          <div className="inline-block w-8 h-8 border-4 border-white/80 border-t-transparent rounded-full animate-spin" />
         </div>
       </div>
     </div>

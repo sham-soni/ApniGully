@@ -169,8 +169,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     for (const p of otherParticipants) {
       if (!this.userSockets.has(p.userId)) {
-        // User is offline, send push notification
-        // In production, use Firebase/APNs
+        // User is offline
         console.log(`Push to ${p.userId}: New message`);
       }
     }

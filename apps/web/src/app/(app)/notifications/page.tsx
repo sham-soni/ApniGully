@@ -38,19 +38,19 @@ const NOTIFICATION_ICONS: Record<string, any> = {
 const NOTIFICATION_COLORS: Record<string, string> = {
   message: 'bg-blue-100 text-blue-600',
   like: 'bg-red-100 text-red-600',
-  comment: 'bg-green-100 text-green-600',
+  comment: 'bg-emerald-100 text-emerald-600',
   follow: 'bg-purple-100 text-purple-600',
-  review: 'bg-yellow-100 text-yellow-600',
+  review: 'bg-amber-100 text-amber-600',
   safety_alert: 'bg-red-100 text-red-600',
   mention: 'bg-blue-100 text-blue-600',
   endorsement: 'bg-pink-100 text-pink-600',
   task_update: 'bg-primary-100 text-primary-600',
-  neighborhood: 'bg-primary-100 text-primary-600',
+  neighborhood: 'bg-secondary-100 text-secondary-600',
 };
 
 export default function NotificationsPage() {
   const router = useRouter();
-  const { data, mutate } = useSWR('/notifications', fetcher);
+  const { data, mutate } = useSWR<any>('/notifications', fetcher);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
 
   const handleMarkAllRead = async () => {
@@ -113,39 +113,39 @@ export default function NotificationsPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white min-h-screen">
+    <div className="max-w-2xl mx-auto animate-fade-in">
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-neutral-200 px-4 py-3 z-10">
-        <div className="flex items-center justify-between mb-3">
+      <div className="p-4 pb-3">
+        <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <button
               onClick={() => router.back()}
-              className="p-2 -ml-2 hover:bg-neutral-100 rounded-full"
+              className="w-9 h-9 flex items-center justify-center rounded-xl bg-[var(--bg-card)] shadow-card press-scale"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-5 h-5 text-[var(--text-primary)]" />
             </button>
-            <h1 className="font-medium text-neutral-900">Notifications</h1>
+            <h1 className="text-lg font-bold text-[var(--text-primary)]">Notifications</h1>
             {unreadCount > 0 && (
-              <span className="px-2 py-0.5 bg-primary-500 text-white text-xs rounded-full">
+              <span className="min-w-[22px] h-[22px] px-1.5 rounded-full flex items-center justify-center text-white text-[10px] font-bold"
+                    style={{ background: 'var(--gradient-button)' }}>
                 {unreadCount}
               </span>
             )}
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             {unreadCount > 0 && (
               <button
                 onClick={handleMarkAllRead}
-                className="p-2 hover:bg-neutral-100 rounded-full"
-                title="Mark all as read"
+                className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors press-scale"
               >
-                <CheckCheck className="w-5 h-5 text-neutral-500" />
+                <CheckCheck className="w-5 h-5 text-[var(--text-muted)]" />
               </button>
             )}
             <Link
               href="/settings"
-              className="p-2 hover:bg-neutral-100 rounded-full"
+              className="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-[var(--bg-tertiary)] transition-colors press-scale"
             >
-              <Settings className="w-5 h-5 text-neutral-500" />
+              <Settings className="w-5 h-5 text-[var(--text-muted)]" />
             </Link>
           </div>
         </div>
@@ -154,21 +154,23 @@ export default function NotificationsPage() {
         <div className="flex gap-2">
           <button
             onClick={() => setFilter('all')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-2xl text-sm font-semibold transition-all duration-200 press-scale-sm ${
               filter === 'all'
-                ? 'bg-primary-500 text-white'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                ? 'text-white shadow-md'
+                : 'bg-[var(--bg-card)] text-[var(--text-muted)] shadow-card'
             }`}
+            style={filter === 'all' ? { background: 'var(--gradient-button)' } : undefined}
           >
             All
           </button>
           <button
             onClick={() => setFilter('unread')}
-            className={`px-4 py-2 rounded-full text-sm font-medium transition-colors ${
+            className={`px-4 py-2 rounded-2xl text-sm font-semibold transition-all duration-200 press-scale-sm ${
               filter === 'unread'
-                ? 'bg-primary-500 text-white'
-                : 'bg-neutral-100 text-neutral-600 hover:bg-neutral-200'
+                ? 'text-white shadow-md'
+                : 'bg-[var(--bg-card)] text-[var(--text-muted)] shadow-card'
             }`}
+            style={filter === 'unread' ? { background: 'var(--gradient-button)' } : undefined}
           >
             Unread ({unreadCount})
           </button>
@@ -176,71 +178,79 @@ export default function NotificationsPage() {
       </div>
 
       {/* Notifications List */}
-      <div className="divide-y divide-neutral-100">
+      <div className="px-4 space-y-2 pb-6">
         {filteredNotifications.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Bell className="w-16 h-16 text-neutral-300 mb-4" />
-            <h2 className="text-lg font-medium text-neutral-900 mb-2">
+          <div className="card p-16 text-center shadow-card">
+            <div className="w-16 h-16 mx-auto rounded-3xl flex items-center justify-center mb-4"
+                 style={{ background: 'var(--gradient-hero-soft)' }}>
+              <Bell className="w-8 h-8 text-white" />
+            </div>
+            <h2 className="text-lg font-bold text-[var(--text-primary)] mb-2">
               {filter === 'unread' ? 'No unread notifications' : 'No notifications yet'}
             </h2>
-            <p className="text-neutral-500 max-w-xs">
+            <p className="text-sm text-[var(--text-muted)] max-w-xs mx-auto">
               {filter === 'unread'
-                ? 'You\'re all caught up!'
-                : 'When you get notifications, they\'ll show up here.'}
+                ? "You're all caught up!"
+                : "When you get notifications, they'll show up here."}
             </p>
           </div>
         )}
 
-        {filteredNotifications.map((notification: any) => {
-          const Icon = NOTIFICATION_ICONS[notification.type] || Bell;
+        {filteredNotifications.map((notification: any, index: number) => {
+          const NotifIcon = NOTIFICATION_ICONS[notification.type] || Bell;
           const colorClass = NOTIFICATION_COLORS[notification.type] || 'bg-neutral-100 text-neutral-600';
 
           return (
             <div
               key={notification.id}
-              className={`relative ${!notification.isRead ? 'bg-primary-50/50' : ''}`}
+              className="group animate-slide-up"
+              style={{ animationDelay: `${index * 0.04}s`, animationFillMode: 'both' }}
             >
               <Link
                 href={getNotificationLink(notification)}
                 onClick={() => handleMarkRead(notification.id)}
-                className="flex items-start gap-3 p-4 hover:bg-neutral-50 transition-colors"
+                className={`card flex items-start gap-3 p-4 shadow-card transition-all duration-200 press-scale-sm ${
+                  !notification.isRead ? 'bg-gradient-card' : ''
+                }`}
               >
                 {/* Icon */}
-                <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${colorClass}`}>
-                  <Icon className="w-5 h-5" />
+                <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${colorClass}`}>
+                  <NotifIcon className="w-5 h-5" />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm ${!notification.isRead ? 'font-medium text-neutral-900' : 'text-neutral-700'}`}>
+                  <p className={`text-sm leading-snug ${!notification.isRead ? 'font-semibold text-[var(--text-primary)]' : 'text-[var(--text-secondary)]'}`}>
                     {notification.title}
                   </p>
                   {notification.body && (
-                    <p className="text-sm text-neutral-500 mt-0.5 line-clamp-2">
+                    <p className="text-xs text-[var(--text-muted)] mt-1 line-clamp-2">
                       {notification.body}
                     </p>
                   )}
-                  <p className="text-xs text-neutral-400 mt-1">
+                  <p className="text-[11px] text-[var(--text-muted)] mt-1.5">
                     {formatTimeAgo(new Date(notification.createdAt))}
                   </p>
                 </div>
 
                 {/* Unread indicator */}
                 {!notification.isRead && (
-                  <div className="w-2 h-2 bg-primary-500 rounded-full flex-shrink-0 mt-2" />
+                  <div className="w-2.5 h-2.5 rounded-full flex-shrink-0 mt-1.5"
+                       style={{ background: 'var(--gradient-button)' }} />
                 )}
-              </Link>
 
-              {/* Delete button */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  handleDelete(notification.id);
-                }}
-                className="absolute top-4 right-4 p-1.5 hover:bg-neutral-100 rounded opacity-0 group-hover:opacity-100 transition-opacity"
-              >
-                <Trash2 className="w-4 h-4 text-neutral-400" />
-              </button>
+                {/* Delete button */}
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDelete(notification.id);
+                  }}
+                  className="p-1.5 rounded-lg hover:bg-[var(--bg-tertiary)] opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
+                >
+                  <Trash2 className="w-4 h-4 text-[var(--text-muted)]" />
+                </button>
+              </Link>
             </div>
           );
         })}

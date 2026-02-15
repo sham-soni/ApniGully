@@ -1,12 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsService } from './notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import { FirebaseService } from './firebase.service';
 
 describe('NotificationsService', () => {
   let service: NotificationsService;
   let prisma: PrismaService;
-  let firebase: FirebaseService;
 
   const mockPrisma = {
     notification: {
@@ -15,20 +13,6 @@ describe('NotificationsService', () => {
       updateMany: jest.fn(),
       count: jest.fn(),
     },
-    user: {
-      findUnique: jest.fn(),
-      findMany: jest.fn(),
-      update: jest.fn(),
-      updateMany: jest.fn(),
-    },
-    neighborhoodMember: {
-      findMany: jest.fn(),
-    },
-  };
-
-  const mockFirebase = {
-    sendPushNotification: jest.fn(),
-    sendMulticastNotification: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -36,13 +20,11 @@ describe('NotificationsService', () => {
       providers: [
         NotificationsService,
         { provide: PrismaService, useValue: mockPrisma },
-        { provide: FirebaseService, useValue: mockFirebase },
       ],
     }).compile();
 
     service = module.get<NotificationsService>(NotificationsService);
     prisma = module.get<PrismaService>(PrismaService);
-    firebase = module.get<FirebaseService>(FirebaseService);
 
     jest.clearAllMocks();
   });
@@ -123,93 +105,6 @@ describe('NotificationsService', () => {
         where: { userId: 'user-1', isRead: false },
         data: { isRead: true },
       });
-    });
-  });
-
-  describe('sendPush', () => {
-    it('should send push notification when user has token', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: 'user-1',
-        pushToken: 'token-123',
-      });
-      mockFirebase.sendPushNotification.mockResolvedValue(true);
-
-      const result = await service.sendPush('user-1', 'Title', 'Body');
-
-      expect(result).toBe(true);
-      expect(mockFirebase.sendPushNotification).toHaveBeenCalledWith(
-        'token-123',
-        expect.objectContaining({
-          title: 'Title',
-          body: 'Body',
-        }),
-      );
-    });
-
-    it('should not send push when user has no token', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: 'user-1',
-        pushToken: null,
-      });
-
-      const result = await service.sendPush('user-1', 'Title', 'Body');
-
-      expect(result).toBe(false);
-      expect(mockFirebase.sendPushNotification).not.toHaveBeenCalled();
-    });
-
-    it('should clear invalid token on failure', async () => {
-      mockPrisma.user.findUnique.mockResolvedValue({
-        id: 'user-1',
-        pushToken: 'invalid-token',
-      });
-      mockFirebase.sendPushNotification.mockResolvedValue(false);
-
-      await service.sendPush('user-1', 'Title', 'Body');
-
-      expect(mockPrisma.user.update).toHaveBeenCalledWith({
-        where: { id: 'user-1' },
-        data: { pushToken: null },
-      });
-    });
-  });
-
-  describe('sendPushToMultipleUsers', () => {
-    it('should send multicast notification', async () => {
-      mockPrisma.user.findMany.mockResolvedValue([
-        { id: 'user-1', pushToken: 'token-1' },
-        { id: 'user-2', pushToken: 'token-2' },
-      ]);
-      mockFirebase.sendMulticastNotification.mockResolvedValue({
-        successCount: 2,
-        failureCount: 0,
-        invalidTokens: [],
-      });
-
-      const result = await service.sendPushToMultipleUsers(
-        ['user-1', 'user-2'],
-        'Title',
-        'Body',
-      );
-
-      expect(result.successCount).toBe(2);
-      expect(mockFirebase.sendMulticastNotification).toHaveBeenCalledWith(
-        ['token-1', 'token-2'],
-        expect.any(Object),
-      );
-    });
-
-    it('should handle no users with push tokens', async () => {
-      mockPrisma.user.findMany.mockResolvedValue([]);
-
-      const result = await service.sendPushToMultipleUsers(
-        ['user-1'],
-        'Title',
-        'Body',
-      );
-
-      expect(result.successCount).toBe(0);
-      expect(mockFirebase.sendMulticastNotification).not.toHaveBeenCalled();
     });
   });
 

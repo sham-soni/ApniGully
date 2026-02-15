@@ -20,9 +20,9 @@ import {
 } from 'lucide-react';
 
 const tabs = [
-  { key: 'helpers', label: 'Helpers', icon: Users },
-  { key: 'shops', label: 'Shops', icon: Store },
-  { key: 'rentals', label: 'Rentals', icon: Home },
+  { key: 'helpers', label: 'Helpers', icon: Users, color: 'bg-primary-100 text-primary-600' },
+  { key: 'shops', label: 'Shops', icon: Store, color: 'bg-secondary-100 text-secondary-600' },
+  { key: 'rentals', label: 'Rentals', icon: Home, color: 'bg-purple-100 text-purple-600' },
 ];
 
 export default function DiscoverPage() {
@@ -32,82 +32,96 @@ export default function DiscoverPage() {
 
   const neighborhoodId = user?.memberships?.[0]?.neighborhoodId;
 
-  const { data, isLoading } = useSWR(
+  const { data, isLoading } = useSWR<any>(
     neighborhoodId ? `/${activeTab}/neighborhood/${neighborhoodId}` : null,
     fetcher
   );
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto animate-fade-in">
       {/* Search */}
-      <div className="bg-white p-4 border-b border-neutral-200">
+      <div className="p-4">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+          <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[var(--text-muted)]" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search helpers, shops, rentals..."
-            className="input pl-10"
+            className="input pl-11"
           />
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="bg-white border-b border-neutral-200">
-        <div className="flex">
-          {tabs.map(({ key, label, icon: Icon }) => (
+      {/* Tabs with gradient indicator */}
+      <div className="px-4 pb-3">
+        <div className="flex gap-2">
+          {tabs.map(({ key, label, icon: Icon, color }) => (
             <button
               key={key}
               onClick={() => setActiveTab(key)}
-              className={`flex-1 flex items-center justify-center gap-2 py-3 border-b-2 transition-colors ${
+              className={`flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-semibold transition-all duration-200 press-scale-sm ${
                 activeTab === key
-                  ? 'border-primary-500 text-primary-600'
-                  : 'border-transparent text-neutral-500 hover:text-neutral-700'
+                  ? 'text-white shadow-md'
+                  : `bg-[var(--bg-card)] text-[var(--text-muted)] shadow-card`
               }`}
+              style={activeTab === key ? { background: 'var(--gradient-button)' } : undefined}
             >
               <Icon className="w-4 h-4" />
-              <span className="font-medium">{label}</span>
+              {label}
             </button>
           ))}
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="px-4 pb-6">
         {isLoading && (
-          <div className="text-center py-8">
-            <div className="inline-block w-8 h-8 border-4 border-primary-500 border-t-transparent rounded-full animate-spin" />
+          <div className="grid gap-3 md:grid-cols-2">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="card p-4">
+                <div className="flex items-start gap-3">
+                  <div className="skeleton w-12 h-12 rounded-full flex-shrink-0" />
+                  <div className="flex-1 space-y-2">
+                    <div className="skeleton h-4 w-32 rounded-lg" />
+                    <div className="skeleton h-3 w-48 rounded-lg" />
+                    <div className="skeleton h-3 w-24 rounded-lg" />
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
 
         {activeTab === 'helpers' && data?.data && (
-          <div className="grid gap-4 md:grid-cols-2">
-            {data.data.map((helper: any) => (
-              <HelperCard key={helper.id} helper={helper} />
+          <div className="grid gap-3 md:grid-cols-2">
+            {data.data.map((helper: any, i: number) => (
+              <HelperCard key={helper.id} helper={helper} index={i} />
             ))}
           </div>
         )}
 
         {activeTab === 'shops' && data?.data && (
-          <div className="grid gap-4 md:grid-cols-2">
-            {data.data.map((shop: any) => (
-              <ShopCard key={shop.id} shop={shop} />
+          <div className="grid gap-3 md:grid-cols-2">
+            {data.data.map((shop: any, i: number) => (
+              <ShopCard key={shop.id} shop={shop} index={i} />
             ))}
           </div>
         )}
 
         {activeTab === 'rentals' && data?.data && (
-          <div className="grid gap-4">
-            {data.data.map((rental: any) => (
-              <RentalCard key={rental.id} rental={rental} />
+          <div className="grid gap-3">
+            {data.data.map((rental: any, i: number) => (
+              <RentalCard key={rental.id} rental={rental} index={i} />
             ))}
           </div>
         )}
 
         {data?.data?.length === 0 && (
-          <div className="text-center py-12 text-neutral-500">
-            No {activeTab} found in your neighborhood yet.
+          <div className="card p-12 text-center shadow-card">
+            <p className="text-[var(--text-muted)] font-medium">
+              No {activeTab} found in your neighborhood yet.
+            </p>
           </div>
         )}
       </div>
@@ -115,110 +129,114 @@ export default function DiscoverPage() {
   );
 }
 
-function HelperCard({ helper }: { helper: any }) {
+function HelperCard({ helper, index }: { helper: any; index: number }) {
   const skills = helper.skills.map((s: string) => SKILL_LABELS[s]?.en || s).join(', ');
 
   return (
     <Link
       href={`/helpers/${helper.id}`}
-      className="card p-4 hover:shadow-md transition-shadow"
+      className="card p-4 shadow-card card-hover animate-slide-up"
+      style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'both' }}
     >
       <div className="flex items-start gap-3">
-        <div className="w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center text-primary-700 font-medium">
+        <div className="w-12 h-12 rounded-full flex items-center justify-center font-semibold flex-shrink-0"
+             style={{ background: 'linear-gradient(135deg, var(--color-primary-100), var(--color-secondary-100))', color: 'var(--color-primary-700)' }}>
           {helper.user?.name?.charAt(0).toUpperCase() || 'H'}
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium text-neutral-900">{helper.user?.name}</h3>
+            <h3 className="font-semibold text-[var(--text-primary)] text-sm">{helper.user?.name}</h3>
             {helper.backgroundCheckStatus === 'verified' && (
-              <span className="badge badge-success text-xs">
+              <span className="badge badge-success text-[10px] px-2 py-0.5">
                 <Check className="w-3 h-3 mr-0.5" />
                 Verified
               </span>
             )}
           </div>
-          <p className="text-sm text-neutral-600 truncate">{skills}</p>
-          <div className="flex items-center gap-4 mt-2 text-sm text-neutral-500">
+          <p className="text-xs text-[var(--text-muted)] truncate mt-0.5">{skills}</p>
+          <div className="flex items-center gap-3 mt-2 text-xs text-[var(--text-muted)]">
             <span className="flex items-center gap-1">
-              <Star className="w-4 h-4 text-yellow-500" />
-              {helper.rating?.toFixed(1) || 'New'}
+              <Star className="w-3.5 h-3.5 text-amber-500" />
+              <span className="font-semibold text-[var(--text-primary)]">{helper.rating?.toFixed(1) || 'New'}</span>
             </span>
-            <span>{helper.experience}+ years</span>
+            <span>{helper.experience}+ yrs</span>
             {helper.monthlyRate && (
-              <span>₹{helper.monthlyRate.toLocaleString()}/mo</span>
+              <span className="font-semibold text-primary-500">₹{helper.monthlyRate.toLocaleString()}/mo</span>
             )}
           </div>
         </div>
-        <ChevronRight className="w-5 h-5 text-neutral-400" />
+        <ChevronRight className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0" />
       </div>
     </Link>
   );
 }
 
-function ShopCard({ shop }: { shop: any }) {
+function ShopCard({ shop, index }: { shop: any; index: number }) {
   return (
     <Link
       href={`/shops/${shop.id}`}
-      className="card p-4 hover:shadow-md transition-shadow"
+      className="card p-4 shadow-card card-hover animate-slide-up"
+      style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'both' }}
     >
       <div className="flex items-start gap-3">
-        <div className="w-12 h-12 bg-neutral-100 rounded-lg flex items-center justify-center">
-          <Store className="w-6 h-6 text-neutral-500" />
+        <div className="w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 bg-secondary-100">
+          <Store className="w-6 h-6 text-secondary-600" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
-            <h3 className="font-medium text-neutral-900">{shop.name}</h3>
+            <h3 className="font-semibold text-[var(--text-primary)] text-sm">{shop.name}</h3>
             {shop.isVerified && (
-              <span className="badge badge-primary text-xs">Verified</span>
+              <span className="badge badge-primary text-[10px] px-2 py-0.5">Verified</span>
             )}
           </div>
-          <p className="text-sm text-neutral-600">{shop.category}</p>
-          <div className="flex items-center gap-4 mt-2 text-sm text-neutral-500">
+          <p className="text-xs text-[var(--text-muted)] mt-0.5">{shop.category}</p>
+          <div className="flex items-center gap-3 mt-2 text-xs text-[var(--text-muted)]">
             <span className="flex items-center gap-1">
-              <Star className="w-4 h-4 text-yellow-500" />
-              {shop.rating?.toFixed(1) || 'New'}
+              <Star className="w-3.5 h-3.5 text-amber-500" />
+              <span className="font-semibold text-[var(--text-primary)]">{shop.rating?.toFixed(1) || 'New'}</span>
             </span>
             <span className="flex items-center gap-1 truncate">
-              <MapPin className="w-4 h-4" />
+              <MapPin className="w-3.5 h-3.5" />
               {shop.address}
             </span>
           </div>
         </div>
-        <ChevronRight className="w-5 h-5 text-neutral-400" />
+        <ChevronRight className="w-5 h-5 text-[var(--text-muted)] flex-shrink-0" />
       </div>
     </Link>
   );
 }
 
-function RentalCard({ rental }: { rental: any }) {
+function RentalCard({ rental, index }: { rental: any; index: number }) {
   return (
     <Link
       href={`/rentals/${rental.id}`}
-      className="card p-4 hover:shadow-md transition-shadow"
+      className="card p-4 shadow-card card-hover animate-slide-up"
+      style={{ animationDelay: `${index * 0.05}s`, animationFillMode: 'both' }}
     >
       <div className="flex gap-4">
-        <div className="w-24 h-24 bg-neutral-100 rounded-lg flex items-center justify-center">
-          <Home className="w-8 h-8 text-neutral-400" />
+        <div className="w-24 h-24 rounded-2xl flex items-center justify-center flex-shrink-0 bg-purple-50">
+          <Home className="w-8 h-8 text-purple-400" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-start justify-between">
             <div>
-              <h3 className="font-semibold text-neutral-900">
+              <h3 className="font-bold text-[var(--text-primary)] text-sm">
                 {rental.bhk || rental.propertyType}
               </h3>
-              <p className="text-lg font-bold text-primary-600 mt-1">
-                ₹{rental.rentAmount?.toLocaleString()}/month
+              <p className="text-lg font-bold text-primary-500 mt-1">
+                ₹{rental.rentAmount?.toLocaleString()}<span className="text-xs font-medium text-[var(--text-muted)]">/month</span>
               </p>
             </div>
             <span className={`badge ${rental.status === 'available' ? 'badge-success' : 'badge-warning'}`}>
               {rental.status}
             </span>
           </div>
-          <div className="flex items-center gap-4 mt-2 text-sm text-neutral-500">
+          <div className="flex items-center gap-3 mt-2 text-xs text-[var(--text-muted)]">
             <span>{rental.furnishing?.replace('_', ' ')}</span>
             {rental.area && <span>{rental.area} sq.ft</span>}
             <span className="flex items-center gap-1">
-              <Clock className="w-4 h-4" />
+              <Clock className="w-3.5 h-3.5" />
               Available now
             </span>
           </div>

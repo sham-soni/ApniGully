@@ -41,7 +41,7 @@ const typeColors: Record<string, string> = {
 
 export default function SavedPostsPage() {
   const { user } = useAuth();
-  const { data, isLoading, mutate } = useSWR(user ? '/posts/saved' : null, fetcher);
+  const { data, isLoading, mutate } = useSWR<any>(user ? '/posts/saved' : null, fetcher);
 
   const handleUnsave = async (postId: string) => {
     try {
@@ -55,12 +55,16 @@ export default function SavedPostsPage() {
   const posts = data?.data || [];
 
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="bg-white p-4 border-b border-neutral-200 flex items-center gap-3">
-        <Link href="/profile" className="p-1 text-neutral-500 hover:text-neutral-700">
-          <ArrowLeft className="w-5 h-5" />
+    <div className="max-w-2xl mx-auto bg-[var(--bg-secondary)] min-h-screen animate-fade-in">
+      {/* Header */}
+      <div className="sticky top-0 bg-[var(--bg-primary)]/80 backdrop-blur-xl px-4 py-3 flex items-center gap-3 z-10">
+        <Link
+          href="/profile"
+          className="w-9 h-9 rounded-xl bg-[var(--bg-card)] shadow-card flex items-center justify-center press-scale"
+        >
+          <ArrowLeft className="w-[18px] h-[18px] text-[var(--text-primary)]" />
         </Link>
-        <h1 className="text-lg font-semibold text-neutral-900">Saved Posts</h1>
+        <h1 className="text-lg font-bold text-[var(--text-primary)]">Saved Posts</h1>
       </div>
 
       {isLoading && (
@@ -70,78 +74,82 @@ export default function SavedPostsPage() {
       )}
 
       {!isLoading && posts.length === 0 && (
-        <div className="text-center py-16 px-4">
-          <Bookmark className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-          <p className="text-neutral-500">No saved posts yet</p>
-          <p className="text-sm text-neutral-400 mt-1">
-            Tap the bookmark icon on any post to save it here
-          </p>
+        <div className="p-4">
+          <div className="card shadow-card text-center py-16 px-6">
+            <div className="w-16 h-16 rounded-2xl bg-primary-100 flex items-center justify-center mx-auto mb-4">
+              <Bookmark className="w-8 h-8 text-primary-600" />
+            </div>
+            <h3 className="font-bold text-[var(--text-primary)] mb-2">No saved posts yet</h3>
+            <p className="text-sm text-[var(--text-muted)]">
+              Tap the bookmark icon on any post to save it here
+            </p>
+          </div>
         </div>
       )}
 
-      <div className="divide-y divide-neutral-100">
+      <div className="p-4 space-y-3">
         {posts.map((post: any) => {
           const Icon = postTypeIcons[post.type] || Megaphone;
           const typeLabel = POST_TYPE_LABELS[post.type]?.en || post.type;
 
           return (
-            <article key={post.id} className="bg-white p-4">
+            <article key={post.id} className="card shadow-card card-hover p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-neutral-200 rounded-full flex items-center justify-center text-neutral-600 font-medium">
+                  <div className="w-10 h-10 bg-[var(--bg-tertiary)] rounded-full flex items-center justify-center text-[var(--text-secondary)] font-bold ring-2 ring-[var(--border-color-light)]">
                     {post.user?.name?.charAt(0).toUpperCase() || 'U'}
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-medium text-neutral-900">{post.user?.name}</span>
+                      <span className="font-semibold text-sm text-[var(--text-primary)]">{post.user?.name}</span>
                       {post.user?.isVerified && (
-                        <span className="text-primary-500 text-xs">Verified</span>
+                        <span className="text-primary-500 text-xs font-semibold">Verified</span>
                       )}
                     </div>
-                    <span className="text-sm text-neutral-500">
+                    <span className="text-xs text-[var(--text-muted)]">
                       {formatTimeAgo(new Date(post.createdAt))}
                     </span>
                   </div>
                 </div>
-                <button className="p-1 text-neutral-400 hover:text-neutral-600">
-                  <MoreHorizontal className="w-5 h-5" />
+                <button className="w-8 h-8 rounded-lg flex items-center justify-center text-[var(--text-muted)] hover:bg-[var(--bg-tertiary)] press-scale-sm">
+                  <MoreHorizontal className="w-[18px] h-[18px]" />
                 </button>
               </div>
 
               <div className="mb-2">
-                <span className={`badge ${typeColors[post.type] || 'bg-neutral-100 text-neutral-700'}`}>
-                  <Icon className="w-3 h-3 mr-1" />
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold ${typeColors[post.type] || 'bg-[var(--bg-tertiary)] text-[var(--text-secondary)]'}`}>
+                  <Icon className="w-3 h-3" />
                   {typeLabel}
                 </span>
               </div>
 
               <Link href={`/posts/${post.id}`}>
                 {post.title && (
-                  <h3 className="font-semibold text-neutral-900 mb-1">{post.title}</h3>
+                  <h3 className="font-bold text-[var(--text-primary)] mb-1">{post.title}</h3>
                 )}
-                <p className="text-neutral-700 whitespace-pre-wrap line-clamp-4">{post.content}</p>
+                <p className="text-sm text-[var(--text-secondary)] whitespace-pre-wrap line-clamp-4">{post.content}</p>
               </Link>
 
-              <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-100">
-                <span className="flex items-center gap-2 text-neutral-500">
-                  <Heart className={`w-5 h-5 ${post.userReaction ? 'fill-red-500 text-red-500' : ''}`} />
-                  <span className="text-sm">{post._count?.reactions || 0}</span>
+              <div className="flex items-center justify-between mt-4 pt-3 border-t border-[var(--border-color-light)]">
+                <span className="flex items-center gap-2 text-[var(--text-muted)]">
+                  <Heart className={`w-[18px] h-[18px] ${post.userReaction ? 'fill-red-500 text-red-500' : ''}`} />
+                  <span className="text-xs font-medium">{post._count?.reactions || 0}</span>
                 </span>
                 <Link
                   href={`/posts/${post.id}`}
-                  className="flex items-center gap-2 text-neutral-500 hover:text-primary-500 transition-colors"
+                  className="flex items-center gap-2 text-[var(--text-muted)] hover:text-primary-500 transition-colors"
                 >
-                  <MessageCircle className="w-5 h-5" />
-                  <span className="text-sm">{post._count?.comments || 0}</span>
+                  <MessageCircle className="w-[18px] h-[18px]" />
+                  <span className="text-xs font-medium">{post._count?.comments || 0}</span>
                 </Link>
                 <button
                   onClick={() => handleUnsave(post.id)}
-                  className="flex items-center gap-2 text-primary-500 hover:text-primary-600 transition-colors"
+                  className="flex items-center gap-2 text-primary-500 hover:text-primary-600 transition-colors press-scale-sm"
                 >
-                  <Bookmark className="w-5 h-5 fill-primary-500" />
+                  <Bookmark className="w-[18px] h-[18px] fill-primary-500" />
                 </button>
-                <button className="flex items-center gap-2 text-neutral-500 hover:text-primary-500 transition-colors">
-                  <Share2 className="w-5 h-5" />
+                <button className="flex items-center gap-2 text-[var(--text-muted)] hover:text-primary-500 transition-colors press-scale-sm">
+                  <Share2 className="w-[18px] h-[18px]" />
                 </button>
               </div>
             </article>

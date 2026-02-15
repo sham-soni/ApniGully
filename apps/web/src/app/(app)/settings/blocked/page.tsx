@@ -22,7 +22,7 @@ export default function BlockedUsersPage() {
   const router = useRouter();
   const [unblockingId, setUnblockingId] = useState<string | null>(null);
 
-  const { data, error, isLoading, mutate } = useSWR<{ data: BlockedUser[] }>(
+  const { data, error, isLoading, mutate } = useSWR<any>(
     '/users/me/blocked',
     fetcher
   );
@@ -53,23 +53,23 @@ export default function BlockedUsersPage() {
   };
 
   return (
-    <div className="max-w-2xl mx-auto bg-white min-h-screen pb-20">
+    <div className="max-w-2xl mx-auto bg-[var(--bg-secondary)] min-h-screen pb-20 animate-fade-in">
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-neutral-200 px-4 py-3 flex items-center gap-3 z-10">
+      <div className="sticky top-0 bg-[var(--bg-primary)]/80 backdrop-blur-xl px-4 py-3 flex items-center gap-3 z-10">
         <button
           onClick={() => router.back()}
-          className="p-2 -ml-2 hover:bg-neutral-100 rounded-full"
+          className="w-9 h-9 rounded-xl bg-[var(--bg-card)] shadow-card flex items-center justify-center press-scale"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-[18px] h-[18px] text-[var(--text-primary)]" />
         </button>
-        <h1 className="font-semibold text-neutral-900">Blocked Users</h1>
+        <h1 className="text-lg font-bold text-[var(--text-primary)]">Blocked Users</h1>
       </div>
 
       {/* Content */}
       <div className="p-4">
         {/* Info Box */}
-        <div className="bg-neutral-50 rounded-xl p-4 mb-4">
-          <p className="text-sm text-neutral-600">
+        <div className="card shadow-card p-4 mb-4">
+          <p className="text-sm text-[var(--text-secondary)]">
             Blocked users cannot see your posts, send you messages, or view your profile.
             You also won't see their content in your feed.
           </p>
@@ -80,24 +80,24 @@ export default function BlockedUsersPage() {
             <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
           </div>
         ) : blockedUsers.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="w-16 h-16 rounded-full bg-neutral-100 flex items-center justify-center mx-auto mb-4">
-              <Ban className="w-8 h-8 text-neutral-400" />
+          <div className="card shadow-card text-center py-12 px-6">
+            <div className="w-16 h-16 rounded-2xl bg-[var(--bg-tertiary)] flex items-center justify-center mx-auto mb-4">
+              <Ban className="w-8 h-8 text-[var(--text-muted)]" />
             </div>
-            <h3 className="font-medium text-neutral-900 mb-2">No blocked users</h3>
-            <p className="text-sm text-neutral-500">
+            <h3 className="font-bold text-[var(--text-primary)] mb-2">No blocked users</h3>
+            <p className="text-sm text-[var(--text-muted)]">
               When you block someone, they'll appear here.
             </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {blockedUsers.map((blocked) => (
+            {blockedUsers.map((blocked: any) => (
               <div
                 key={blocked.id}
-                className="flex items-center justify-between p-4 border border-neutral-200 rounded-xl"
+                className="card shadow-card card-hover flex items-center justify-between p-4"
               >
                 <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-neutral-200 flex items-center justify-center overflow-hidden">
+                  <div className="w-12 h-12 rounded-full bg-[var(--bg-tertiary)] flex items-center justify-center overflow-hidden ring-2 ring-[var(--border-color-light)]">
                     {blocked.blockedUser.avatar ? (
                       <img
                         src={blocked.blockedUser.avatar}
@@ -105,16 +105,16 @@ export default function BlockedUsersPage() {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <span className="text-lg font-semibold text-neutral-500">
+                      <span className="text-lg font-bold text-[var(--text-muted)]">
                         {blocked.blockedUser.name?.charAt(0).toUpperCase() || 'U'}
                       </span>
                     )}
                   </div>
                   <div>
-                    <h3 className="font-medium text-neutral-900">
+                    <h3 className="font-semibold text-sm text-[var(--text-primary)]">
                       {blocked.blockedUser.name}
                     </h3>
-                    <p className="text-sm text-neutral-500">
+                    <p className="text-xs text-[var(--text-muted)]">
                       Blocked on {formatDate(blocked.createdAt)}
                     </p>
                   </div>
@@ -122,7 +122,7 @@ export default function BlockedUsersPage() {
                 <button
                   onClick={() => handleUnblock(blocked.blockedUser.id, blocked.blockedUser.name)}
                   disabled={unblockingId === blocked.blockedUser.id}
-                  className="px-4 py-2 text-sm font-medium text-primary-600 hover:bg-primary-50 rounded-lg disabled:opacity-50"
+                  className="btn btn-ghost px-4 py-2 text-sm font-semibold text-primary-500 hover:bg-primary-50 disabled:opacity-50 press-scale-sm"
                 >
                   {unblockingId === blocked.blockedUser.id ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

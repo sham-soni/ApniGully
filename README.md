@@ -30,7 +30,6 @@ ApniGully is a production-ready micro-community platform designed specifically f
 ### Backend
 - **API**: NestJS, TypeScript
 - **Database**: PostgreSQL with Prisma ORM
-- **Cache/Sessions**: Redis
 - **Real-time**: Socket.io WebSockets
 - **Storage**: S3-compatible (AWS S3 / MinIO)
 

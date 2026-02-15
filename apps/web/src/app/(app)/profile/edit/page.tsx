@@ -81,20 +81,20 @@ export default function EditProfilePage() {
   const displayAvatar = avatarPreview || avatarUrl;
 
   return (
-    <div className="max-w-2xl mx-auto bg-white min-h-screen">
+    <div className="max-w-2xl mx-auto bg-[var(--bg-secondary)] min-h-screen animate-fade-in">
       {/* Header */}
-      <div className="sticky top-0 bg-white border-b border-neutral-200 px-4 py-3 flex items-center gap-3 z-10">
+      <div className="sticky top-0 bg-[var(--bg-primary)]/80 backdrop-blur-xl px-4 py-3 flex items-center gap-3 z-10">
         <button
           onClick={() => router.back()}
-          className="p-2 -ml-2 hover:bg-neutral-100 rounded-full"
+          className="w-9 h-9 rounded-xl bg-[var(--bg-card)] shadow-card flex items-center justify-center press-scale"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-[18px] h-[18px] text-[var(--text-primary)]" />
         </button>
-        <h1 className="font-semibold text-neutral-900">Edit Profile</h1>
+        <h1 className="text-lg font-bold text-[var(--text-primary)]">Edit Profile</h1>
       </div>
 
       {/* Avatar Section */}
-      <div className="flex flex-col items-center py-8 border-b border-neutral-100">
+      <div className="flex flex-col items-center py-8">
         <input
           ref={fileInputRef}
           type="file"
@@ -105,9 +105,9 @@ export default function EditProfilePage() {
         <button
           onClick={handleAvatarClick}
           disabled={isUploadingAvatar}
-          className="relative group"
+          className="relative group press-scale"
         >
-          <div className="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden">
+          <div className="w-24 h-24 rounded-full bg-primary-100 flex items-center justify-center overflow-hidden ring-4 ring-[var(--bg-primary)] shadow-elevated">
             {displayAvatar ? (
               <img
                 src={displayAvatar}
@@ -115,7 +115,7 @@ export default function EditProfilePage() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-3xl font-semibold text-primary-700">
+              <span className="text-3xl font-bold text-primary-700">
                 {name?.charAt(0).toUpperCase() || 'U'}
               </span>
             )}
@@ -125,77 +125,81 @@ export default function EditProfilePage() {
               </div>
             )}
           </div>
-          <div className="absolute bottom-0 right-0 w-8 h-8 bg-primary-500 rounded-full flex items-center justify-center border-2 border-white">
+          <div className="absolute bottom-0 right-0 w-8 h-8 bg-gradient-to-r from-primary-500 to-secondary-500 rounded-full flex items-center justify-center border-2 border-[var(--bg-primary)] shadow-card">
             <Camera className="w-4 h-4 text-white" />
           </div>
         </button>
-        <p className="text-sm text-neutral-500 mt-2">
+        <p className="text-sm text-[var(--text-muted)] mt-3">
           {isUploadingAvatar ? 'Uploading...' : 'Tap to change photo'}
         </p>
       </div>
 
       {/* Form */}
-      <div className="p-4 space-y-6">
-        {/* Name */}
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Name
-          </label>
-          <input
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Enter your name"
-            maxLength={50}
-            className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent"
-          />
-        </div>
-
-        {/* Phone (read-only) */}
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Phone
-          </label>
-          <div className="flex items-center justify-between px-4 py-3 bg-neutral-100 rounded-xl">
-            <span className="text-neutral-600">{user?.phone}</span>
-            <span className="flex items-center gap-1 text-sm text-green-600">
-              <span className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center">
-                <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                </svg>
-              </span>
-              Verified
-            </span>
+      <div className="px-4 space-y-4">
+        <div className="card shadow-card p-4 space-y-5">
+          {/* Name */}
+          <div>
+            <label className="label">
+              Name
+            </label>
+            <input
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Enter your name"
+              maxLength={50}
+              className="input w-full"
+            />
           </div>
-        </div>
 
-        {/* Bio */}
-        <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Bio
-          </label>
-          <textarea
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Tell your neighbors about yourself..."
-            maxLength={200}
-            rows={4}
-            className="w-full px-4 py-3 bg-neutral-50 border border-neutral-200 rounded-xl text-neutral-900 placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
-          />
-          <p className="text-xs text-neutral-400 text-right mt-1">
-            {bio.length}/200
-          </p>
+          {/* Phone (read-only) */}
+          <div>
+            <label className="label">
+              Phone
+            </label>
+            <div className="flex items-center justify-between px-4 py-3 bg-[var(--bg-tertiary)] rounded-2xl">
+              <span className="text-[var(--text-secondary)]">{user?.phone}</span>
+              <span className="flex items-center gap-1.5 text-sm text-accent-500 font-medium">
+                <span className="w-4 h-4 rounded-full bg-accent-500 flex items-center justify-center">
+                  <svg className="w-2.5 h-2.5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                  </svg>
+                </span>
+                Verified
+              </span>
+            </div>
+          </div>
+
+          {/* Bio */}
+          <div>
+            <label className="label">
+              Bio
+            </label>
+            <textarea
+              value={bio}
+              onChange={(e) => setBio(e.target.value)}
+              placeholder="Tell your neighbors about yourself..."
+              maxLength={200}
+              rows={4}
+              className="input w-full resize-none"
+            />
+            <p className="text-xs text-[var(--text-muted)] text-right mt-1">
+              {bio.length}/200
+            </p>
+          </div>
         </div>
 
         {/* Info Box */}
-        <div className="flex gap-3 p-4 bg-primary-50 rounded-xl">
-          <div className="w-5 h-5 rounded-full bg-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5">
-            <span className="text-primary-600 text-xs font-bold">i</span>
+        <div className="card shadow-card p-4 bg-primary-50 dark:bg-primary-950/30">
+          <div className="flex gap-3">
+            <div className="w-6 h-6 rounded-lg bg-primary-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <span className="text-primary-600 text-xs font-bold">i</span>
+            </div>
+            <p className="text-sm text-primary-700 dark:text-primary-300">
+              Your name and bio are visible to neighbors in your community.
+              Use your real name for trust and verification.
+            </p>
           </div>
-          <p className="text-sm text-primary-700">
-            Your name and bio are visible to neighbors in your community.
-            Use your real name for trust and verification.
-          </p>
         </div>
       </div>
 
@@ -204,7 +208,7 @@ export default function EditProfilePage() {
         <button
           onClick={handleSave}
           disabled={isSaving}
-          className="w-full py-3 bg-primary-500 text-white font-semibold rounded-xl hover:bg-primary-600 disabled:bg-neutral-300 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+          className="btn btn-primary w-full py-3 font-bold disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 press-scale"
         >
           {isSaving ? (
             <>

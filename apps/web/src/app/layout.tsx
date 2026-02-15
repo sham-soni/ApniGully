@@ -1,8 +1,16 @@
 import type { Metadata, Viewport } from 'next';
+import { Poppins } from 'next/font/google';
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import '@/styles/globals.css';
+
+const poppins = Poppins({
+  subsets: ['latin', 'devanagari'],
+  weight: ['300', '400', '500', '600', '700', '800'],
+  variable: '--font-poppins',
+  display: 'swap',
+});
 
 export const metadata: Metadata = {
   title: 'ApniGully - Your Neighborhood Community',
@@ -18,7 +26,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
-  themeColor: '#2AB7A4',
+  themeColor: '#FF6B35',
 };
 
 export default function RootLayout({
@@ -27,8 +35,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className="min-h-screen bg-[var(--bg-secondary)] text-[var(--text-primary)] transition-colors">
+    <html lang="en" className={poppins.variable} suppressHydrationWarning>
+      <body className="min-h-screen bg-[var(--bg-secondary)] text-[var(--text-primary)] font-sans transition-colors">
         <ThemeProvider>
           <AuthProvider>
             {children}
@@ -37,10 +45,13 @@ export default function RootLayout({
               toastOptions={{
                 duration: 3000,
                 style: {
-                  background: 'var(--bg-tertiary)',
+                  background: 'var(--bg-card)',
                   color: 'var(--text-primary)',
-                  borderRadius: '8px',
-                  border: '1px solid var(--border-color)',
+                  borderRadius: '16px',
+                  border: 'none',
+                  boxShadow: '0 4px 12px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.04)',
+                  fontWeight: '500',
+                  fontSize: '14px',
                 },
               }}
             />
