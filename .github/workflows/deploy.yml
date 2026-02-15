@@ -26,7 +26,7 @@ jobs:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
-          command_timeout: 15m
+          command_timeout: 5m
           envs: POSTGRES_PASSWORD,JWT_SECRET,MINIO_PASSWORD
           script: |
             # Clone repo if not exists
@@ -37,41 +37,30 @@ jobs:
             cd $HOME/ApniGully
             git pull origin master
 
-            # Create .env.production if not exists
-            if [ ! -f .env.production ]; then
-              echo "Creating .env.production..."
-              cat > .env.production << EOF
-            # Database
-            POSTGRES_USER=apnigully
-            POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-            POSTGRES_DB=apnigully
+            # Create .env.production if not exists or fix it
+            echo "Creating .env.production..."
+            cat > .env.production << EOF
+POSTGRES_USER=apnigully
+POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+POSTGRES_DB=apnigully
+JWT_SECRET=${JWT_SECRET}
+JWT_EXPIRY=7d
+CORS_ORIGINS=https://gullywale.com,http://gullywale.com
+NEXT_PUBLIC_API_URL=http://gullywale.com/api/v1
+NEXT_PUBLIC_WS_URL=http://gullywale.com
+MINIO_ROOT_USER=minioadmin
+MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
+EOF
+            echo ".env.production created"
 
-            # JWT
-            JWT_SECRET=${JWT_SECRET}
-            JWT_EXPIRY=7d
+            # Check container status
+            echo "=== Container status ==="
+            docker ps -a
 
-            # CORS & URLs
-            CORS_ORIGINS=https://gullywale.com,http://gullywale.com
-            NEXT_PUBLIC_API_URL=https://gullywale.com/api/v1
-            NEXT_PUBLIC_WS_URL=https://gullywale.com
-
-            # MinIO
-            MINIO_ROOT_USER=minioadmin
-            MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
-            EOF
-              echo ".env.production created"
-            fi
-
-            chmod +x deploy.sh setup-ssl.sh
+            # Restart services
+            chmod +x deploy.sh
             ./deploy.sh
 
-            # Setup SSL if not already done
-            echo "=== Checking SSL status ==="
-            if ! docker exec apnigully-nginx test -f /etc/letsencrypt/live/gullywale.com/fullchain.pem 2>/dev/null; then
-              echo "Setting up SSL certificates..."
-              ./setup-ssl.sh admin@gullywale.com
-            else
-              echo "SSL certificates exist, reloading nginx..."
-              docker exec apnigully-nginx nginx -s reload || true
-            fi
-            echo "Deployment successful! Site: https://gullywale.com"
+            echo "=== Final container status ==="
+            docker ps
+            echo "Deployment complete! Site: http://gullywale.com"
