@@ -18,10 +18,6 @@ jobs:
 
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
-        env:
-          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          MINIO_PASSWORD: ${{ secrets.MINIO_PASSWORD }}
         with:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
@@ -29,38 +25,25 @@ jobs:
           command_timeout: 5m
           envs: POSTGRES_PASSWORD,JWT_SECRET,MINIO_PASSWORD
           script: |
-            # Clone repo if not exists
-            if [ ! -d "$HOME/ApniGully" ]; then
-              echo "Cloning repository..."
-              git clone https://github.com/sham-soni/ApniGully.git $HOME/ApniGully
-            fi
-            cd $HOME/ApniGully
+            cd $HOME/ApniGully || git clone https://github.com/sham-soni/ApniGully.git $HOME/ApniGully && cd $HOME/ApniGully
             git pull origin master
 
-            # Create .env.production if not exists or fix it
-            echo "Creating .env.production..."
-            cat > .env.production << EOF
-POSTGRES_USER=apnigully
-POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-POSTGRES_DB=apnigully
-JWT_SECRET=${JWT_SECRET}
-JWT_EXPIRY=7d
-CORS_ORIGINS=https://gullywale.com,http://gullywale.com
-NEXT_PUBLIC_API_URL=http://gullywale.com/api/v1
-NEXT_PUBLIC_WS_URL=http://gullywale.com
-MINIO_ROOT_USER=minioadmin
-MINIO_ROOT_PASSWORD=${MINIO_PASSWORD}
-EOF
-            echo ".env.production created"
+            echo "POSTGRES_USER=apnigully" > .env.production
+            echo "POSTGRES_PASSWORD=$POSTGRES_PASSWORD" >> .env.production
+            echo "POSTGRES_DB=apnigully" >> .env.production
+            echo "JWT_SECRET=$JWT_SECRET" >> .env.production
+            echo "JWT_EXPIRY=7d" >> .env.production
+            echo "CORS_ORIGINS=https://gullywale.com,http://gullywale.com" >> .env.production
+            echo "NEXT_PUBLIC_API_URL=http://gullywale.com/api/v1" >> .env.production
+            echo "NEXT_PUBLIC_WS_URL=http://gullywale.com" >> .env.production
+            echo "MINIO_ROOT_USER=minioadmin" >> .env.production
+            echo "MINIO_ROOT_PASSWORD=$MINIO_PASSWORD" >> .env.production
 
-            # Check container status
-            echo "=== Container status ==="
             docker ps -a
-
-            # Restart services
             chmod +x deploy.sh
             ./deploy.sh
-
-            echo "=== Final container status ==="
             docker ps
-            echo "Deployment complete! Site: http://gullywale.com"
+        env:
+          POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
+          JWT_SECRET: ${{ secrets.JWT_SECRET }}
+          MINIO_PASSWORD: ${{ secrets.MINIO_PASSWORD }}
