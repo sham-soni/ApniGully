@@ -24,17 +24,29 @@ jobs:
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
           command_timeout: 15m
           script: |
-            cd ~/ApniGully
+            # Clone repo if not exists
+            if [ ! -d "$HOME/ApniGully" ]; then
+              echo "Cloning repository..."
+              git clone https://github.com/sham-soni/ApniGully.git $HOME/ApniGully
+            fi
+            cd $HOME/ApniGully
             git pull origin master
+
+            # Check if .env.production exists
+            if [ ! -f .env.production ]; then
+              echo "ERROR: .env.production not found. Creating from example..."
+              cp .env.production.example .env.production
+              echo "Please edit .env.production with your actual values!"
+              exit 1
+            fi
+
+            chmod +x deploy.sh setup-ssl.sh
             ./deploy.sh
-            # Check SSL cert status
+
+            # Setup SSL if not already done
             echo "=== Checking SSL status ==="
-            docker exec apnigully-nginx ls -la /etc/letsencrypt/live/gullywale.com/ 2>/dev/null || echo "No SSL certs found in container"
-            docker exec apnigully-nginx nginx -t 2>&1 || echo "Nginx config test failed"
-            # Setup SSL if certs not in container
             if ! docker exec apnigully-nginx test -f /etc/letsencrypt/live/gullywale.com/fullchain.pem 2>/dev/null; then
               echo "Setting up SSL certificates..."
-              chmod +x setup-ssl.sh
               ./setup-ssl.sh admin@gullywale.com
             else
               echo "SSL certificates exist, reloading nginx..."
