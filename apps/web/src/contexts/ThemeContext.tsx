@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { safeStorage } from '@/lib/storage';
 
 type Theme = 'light' | 'dark' | 'system';
 
@@ -25,7 +26,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
-    const storedTheme = localStorage.getItem('theme') as Theme | null;
+    const storedTheme = safeStorage.getItem('theme') as Theme | null;
     if (storedTheme && ['light', 'dark', 'system'].includes(storedTheme)) {
       setThemeState(storedTheme);
     }
@@ -66,7 +67,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
 
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
-    localStorage.setItem('theme', newTheme);
+    safeStorage.setItem('theme', newTheme);
   };
 
   const toggleTheme = () => {

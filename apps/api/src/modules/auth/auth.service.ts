@@ -61,6 +61,8 @@ export class AuthService {
     return {
       success: true,
       message: 'OTP sent successfully',
+      // In test mode, tell frontend to auto-verify
+      ...(this.SKIP_OTP_VERIFICATION && { skipOtp: true, testOtp: '123456' }),
     };
   }
 

@@ -3,6 +3,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { safeStorage } from '@/lib/storage';
 
 interface User {
   id: string;
@@ -33,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
-    const storedToken = localStorage.getItem('token');
+    const storedToken = safeStorage.getItem('token');
     if (storedToken) {
       setToken(storedToken);
       fetchUser(storedToken);
@@ -49,7 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       });
       setUser(userData);
     } catch (error) {
-      localStorage.removeItem('token');
+      safeStorage.removeItem('token');
       setToken(null);
     } finally {
       setIsLoading(false);
@@ -57,13 +58,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const login = (authToken: string, userData: User) => {
-    localStorage.setItem('token', authToken);
+    safeStorage.setItem('token', authToken);
     setToken(authToken);
     setUser(userData);
   };
 
   const logout = () => {
-    localStorage.removeItem('token');
+    safeStorage.removeItem('token');
     setToken(null);
     setUser(null);
     router.push('/login');

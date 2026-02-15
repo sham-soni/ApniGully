@@ -1,3 +1,5 @@
+import { safeStorage } from './storage';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 class ApiClient {
@@ -8,7 +10,7 @@ class ApiClient {
   }
 
   private getHeaders(customHeaders?: Record<string, string>): Record<string, string> {
-    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    const token = typeof window !== 'undefined' ? safeStorage.getItem('token') : null;
     return {
       'Content-Type': 'application/json',
       ...(token && { Authorization: `Bearer ${token}` }),
@@ -67,7 +69,7 @@ class OfflineQueue {
 
   constructor() {
     if (typeof window !== 'undefined') {
-      const stored = localStorage.getItem(this.storageKey);
+      const stored = safeStorage.getItem(this.storageKey);
       if (stored) {
         this.queue = JSON.parse(stored);
       }
@@ -83,7 +85,7 @@ class OfflineQueue {
 
   private save() {
     if (typeof window !== 'undefined') {
-      localStorage.setItem(this.storageKey, JSON.stringify(this.queue));
+      safeStorage.setItem(this.storageKey, JSON.stringify(this.queue));
     }
   }
 

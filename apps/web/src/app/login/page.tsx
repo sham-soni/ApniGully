@@ -26,8 +26,26 @@ export default function LoginPage() {
 
   const handleSendOtp = async (data: any) => {
     try {
-      await api.post('/auth/send-otp', { phone: data.phone });
+      const response: any = await api.post('/auth/send-otp', { phone: data.phone });
       setPhone(data.phone);
+
+      // In test mode, auto-verify OTP and skip the OTP screen
+      if (response.skipOtp && response.testOtp) {
+        toast.success('Dev mode: Auto-verifying OTP...');
+        const verifyResponse: any = await api.post('/auth/verify-otp', {
+          phone: data.phone,
+          otp: response.testOtp,
+        });
+        login(verifyResponse.token, verifyResponse.user);
+        if (verifyResponse.isNewUser || !verifyResponse.user.name) {
+          setIsNewUser(true);
+          setStep('profile');
+        } else {
+          router.push('/feed');
+        }
+        return;
+      }
+
       setStep('otp');
       toast.success('OTP sent to your phone');
     } catch (error: any) {
