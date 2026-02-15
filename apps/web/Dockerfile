@@ -25,7 +25,7 @@ ARG NEXT_PUBLIC_WS_URL
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
 
-RUN npm run build --workspace=apps/web
+RUN mkdir -p apps/web/public && npm run build --workspace=apps/web
 
 # --- Production stage ---
 FROM node:20-alpine
