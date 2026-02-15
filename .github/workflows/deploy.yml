@@ -22,9 +22,17 @@ jobs:
           host: ${{ secrets.AZURE_VM_HOST }}
           username: ${{ secrets.AZURE_VM_USER }}
           key: ${{ secrets.AZURE_VM_SSH_KEY }}
-          debug: true
+          command_timeout: 15m
           script: |
             cd ~/ApniGully
             git pull origin master
             ./deploy.sh
+            # Setup SSL if not already done
+            if [ ! -f /etc/letsencrypt/live/gullywale.com/fullchain.pem ]; then
+              echo "Setting up SSL certificates..."
+              chmod +x setup-ssl.sh
+              ./setup-ssl.sh admin@gullywale.com
+            else
+              echo "SSL certificates already exist"
+            fi
             echo "Deployment successful! Site: https://gullywale.com"
