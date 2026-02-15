@@ -437,6 +437,33 @@ export class PostsService {
     return { action: 'added', type };
   }
 
+  async getSavedPosts(userId: string, page: number = 1, limit: number = 20) {
+    const skip = (page - 1) * limit;
+
+    const [savedPosts, total] = await Promise.all([
+      this.prisma.savedPost.findMany({
+        where: { userId },
+        include: {
+          post: {
+            include: {
+              user: { select: { id: true, name: true, avatar: true, isVerified: true } },
+              _count: { select: { comments: true, reactions: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      this.prisma.savedPost.count({ where: { userId } }),
+    ]);
+
+    return {
+      data: savedPosts.map((sp) => ({ ...sp.post, isSaved: true })),
+      pagination: { page, limit, total, hasMore: skip + savedPosts.length < total },
+    };
+  }
+
   async savePost(userId: string, postId: string) {
     const post = await this.prisma.post.findUnique({ where: { id: postId } });
 

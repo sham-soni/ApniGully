@@ -46,6 +46,12 @@ export class PostsController {
     return this.postsService.getFeed(req.user.id, neighborhoodId, filters);
   }
 
+  @Get('saved')
+  @ApiOperation({ summary: 'Get saved posts' })
+  async getSavedPosts(@Request() req: any, @Query() query: PaginationDto) {
+    return this.postsService.getSavedPosts(req.user.id, query.page, query.limit);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Get post by ID' })
   async findById(@Request() req: any, @Param('id') id: string) {

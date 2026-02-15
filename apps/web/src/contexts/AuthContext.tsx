@@ -44,10 +44,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const fetchUser = async (authToken: string) => {
     try {
-      const response = await api.get('/users/me', {
+      const userData = await api.get<User>('/users/me', {
         headers: { Authorization: `Bearer ${authToken}` },
       });
-      setUser(response.data);
+      setUser(userData);
     } catch (error) {
       localStorage.removeItem('token');
       setToken(null);

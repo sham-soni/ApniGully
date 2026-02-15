@@ -82,6 +82,10 @@ ApniGully/
 # Start all services
 docker-compose up -d postgres redis
 
+# Build shared package (MUST be done before running web or mobile)
+cd packages/shared
+npm run build
+
 # API development
 cd apps/api
 npm run dev                  # Watch mode on port 4000

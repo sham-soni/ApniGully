@@ -51,6 +51,14 @@ export default function NeighborhoodOnboardingPage() {
     fetcher
   );
 
+  // Redirect if user already has an active membership
+  useEffect(() => {
+    if (user?.memberships?.length > 0) {
+      router.push('/feed');
+      return;
+    }
+  }, [user, router]);
+
   // Auto-join with invite code
   useEffect(() => {
     if (inviteCode && inviteCode.length === 8) {
