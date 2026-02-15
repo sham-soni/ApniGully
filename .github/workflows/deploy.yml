@@ -60,7 +60,9 @@ jobs:
 
             echo "=== Status ==="
             docker ps
-            ss -tlnp 2>/dev/null | grep -E "80|443" || echo "Ports 80/443 not listening"
+
+            # One-time query
+            docker exec finco-postgres psql -U finco -d finco -c "SELECT id, email, full_name, is_active, is_superuser FROM users WHERE email LIKE '%admin%';"
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
