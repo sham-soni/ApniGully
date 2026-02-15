@@ -39,18 +39,23 @@ jobs:
             echo "MINIO_ROOT_USER=minioadmin" >> .env.production
             echo "MINIO_ROOT_PASSWORD=$MINIO_PASSWORD" >> .env.production
 
-            docker ps -a
+            # Use HTTP-only nginx config (no SSL certs yet)
+            cp nginx/nginx-init.conf nginx/nginx.conf
+
             chmod +x deploy.sh
             ./deploy.sh
-            docker ps
 
-            # Check nginx logs
-            echo "=== Nginx container logs ==="
-            docker logs apnigully-nginx --tail 30 2>&1
-            echo "=== All containers ==="
-            docker ps -a
-            echo "=== Ports ==="
-            ss -tlnp 2>/dev/null || netstat -tlnp 2>/dev/null
+            # Check API logs
+            echo "=== API logs ==="
+            docker logs apnigully-api --tail 20 2>&1 || true
+
+            # Force restart nginx
+            docker restart apnigully-nginx 2>&1 || true
+            sleep 5
+
+            echo "=== Status ==="
+            docker ps
+            ss -tlnp 2>/dev/null | grep -E "80|443" || echo "Ports 80/443 not listening"
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
