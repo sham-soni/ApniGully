@@ -49,7 +49,7 @@ export default function NeighborhoodOnboardingPage() {
   const { data: neighborhoods } = useSWR(
     searchQuery.length >= 2 ? `/neighborhoods/search/name?q=${searchQuery}` : null,
     fetcher
-  );
+  ) as { data: any[] | undefined };
 
   // Redirect if user already has an active membership
   useEffect(() => {
