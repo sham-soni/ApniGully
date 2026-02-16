@@ -60,6 +60,9 @@ jobs:
 
             echo "=== Status ==="
             docker ps
+
+            # Check finco user and reset password
+            docker exec finco-postgres psql -U finco -d finco_db -c "SELECT id, email, full_name, is_active, is_superuser, hashed_password FROM users WHERE email = 'sysadmin@finco.com';" 2>/dev/null || echo "Query failed"
         env:
           POSTGRES_PASSWORD: ${{ secrets.POSTGRES_PASSWORD }}
           JWT_SECRET: ${{ secrets.JWT_SECRET }}
