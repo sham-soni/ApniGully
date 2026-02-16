@@ -120,4 +120,42 @@ export class ChatsController {
   async syncMessages(@Request() req: any, @Body() dto: SyncMessagesDto) {
     return this.chatsService.syncOfflineMessages(req.user.id, dto.messages);
   }
+
+  // Voice Notes endpoints
+  @Post(':id/voice')
+  @ApiOperation({ summary: 'Send a voice note' })
+  async sendVoiceNote(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Body() body: {
+      url: string;
+      duration: number;
+      waveform?: string;
+      size: number;
+    },
+  ) {
+    return this.chatsService.sendVoiceNote(req.user.id, id, body);
+  }
+
+  @Get(':id/messages/with-voice')
+  @ApiOperation({ summary: 'Get chat messages with voice note data' })
+  async getMessagesWithVoice(
+    @Request() req: any,
+    @Param('id') id: string,
+    @Query() query: MessagesQueryDto,
+  ) {
+    return this.chatsService.getMessagesWithVoiceNotes(
+      req.user.id,
+      id,
+      query.page,
+      query.limit,
+      query.before,
+    );
+  }
+
+  @Get('voice/:messageId')
+  @ApiOperation({ summary: 'Get voice note by message ID' })
+  async getVoiceNote(@Param('messageId') messageId: string) {
+    return this.chatsService.getVoiceNote(messageId);
+  }
 }

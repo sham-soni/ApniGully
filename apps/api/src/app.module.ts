@@ -29,6 +29,23 @@ import { HealthModule } from './modules/health/health.module';
 import { PollsModule } from './modules/polls/polls.module';
 import { EventsModule } from './modules/events/events.module';
 
+// Phase 1-4 New Modules
+import { GamificationModule } from './modules/gamification/gamification.module';
+import { PaymentsModule } from './modules/payments/payments.module';
+import { SOSModule } from './modules/sos/sos.module';
+import { AIFeedModule } from './modules/ai-feed/ai-feed.module';
+import { LiveLocationModule } from './modules/live-location/live-location.module';
+import { RWAModule } from './modules/rwa/rwa.module';
+import { CirclesModule } from './modules/circles/circles.module';
+import { CallingModule } from './modules/calling/calling.module';
+import { VirtualToursModule } from './modules/virtual-tours/virtual-tours.module';
+import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
+import { StoriesModule } from './modules/stories/stories.module';
+import { SmartHomeModule } from './modules/smart-home/smart-home.module';
+import { TranslationModule } from './modules/translation/translation.module';
+import { PriceIndexModule } from './modules/price-index/price-index.module';
+import { CarpoolModule } from './modules/carpool/carpool.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -66,6 +83,22 @@ import { EventsModule } from './modules/events/events.module';
     HealthModule,
     PollsModule,
     EventsModule,
+    // Phase 1-4 New Modules
+    GamificationModule,
+    PaymentsModule,
+    SOSModule,
+    AIFeedModule,
+    LiveLocationModule,
+    RWAModule,
+    CirclesModule,
+    CallingModule,
+    VirtualToursModule,
+    SubscriptionsModule,
+    StoriesModule,
+    SmartHomeModule,
+    TranslationModule,
+    PriceIndexModule,
+    CarpoolModule,
   ],
   providers: [
     {

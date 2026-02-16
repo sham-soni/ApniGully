@@ -163,51 +163,61 @@ enum DigestFrequency {
 
 // Core Models
 model User {
-  id               String   @id @default(uuid())
-  phone            String   @unique
-  email            String?  @unique
-  name             String
-  avatar           String?
-  language         Language @default(en)
-  isVerified       Boolean  @default(false)
-  trustScore       Int      @default(50)
-  endorsementCount Int      @default(0)
-  isActive         Boolean  @default(true)
-  isBanned         Boolean  @default(false)
-  banExpiresAt     DateTime?
-  lastSeenAt       DateTime?
-  pushToken        String?
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+  id                String            @id @default(uuid())
+  phone             String            @unique
+  email             String?           @unique
+  name              String
+  avatar            String?
+  language          Language          @default(en)
+  isVerified        Boolean           @default(false)
+  verificationLevel VerificationLevel @default(phone)
+  trustScore        Int               @default(50)
+  endorsementCount  Int               @default(0)
+  isActive          Boolean           @default(true)
+  isBanned          Boolean           @default(false)
+  banExpiresAt      DateTime?
+  lastSeenAt        DateTime?
+  pushToken         String?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   // Relations
-  memberships        Membership[]
-  posts              Post[]
-  comments           Comment[]
-  reactions          Reaction[]
-  helperProfile      HelperProfile?
-  shops              Shop[]
-  reviewsGiven       Review[]        @relation("ReviewAuthor")
-  endorsementsGiven  Endorsement[]   @relation("Endorser")
-  endorsementsReceived Endorsement[] @relation("Endorsee")
-  chats              ChatParticipant[]
-  messages           Message[]
-  tasksRequested     Task[]          @relation("TaskRequester")
-  tasksProvided      Task[]          @relation("TaskProvider")
-  reports            Report[]        @relation("Reporter")
-  reportsReceived    Report[]        @relation("ReportTarget")
-  moderationActions  ModerationAction[] @relation("Moderator")
-  moderationReceived ModerationAction[] @relation("ModTarget")
-  notifications      Notification[]
-  digestPreferences  DigestPreference[]
-  auditLogs          AuditLog[]
-  savedPosts         SavedPost[]
-  otpRequests        OtpRequest[]
-  rentalListings     RentalListing[]
-  settings           UserSettings?
-  blockedUsers       BlockedUser[]   @relation("Blocker")
-  blockedByUsers     BlockedUser[]   @relation("Blocked")
-  eventRsvps         EventRSVP[]
+  memberships          Membership[]
+  posts                Post[]
+  comments             Comment[]
+  reactions            Reaction[]
+  helperProfile        HelperProfile?
+  shops                Shop[]
+  reviewsGiven         Review[]           @relation("ReviewAuthor")
+  endorsementsGiven    Endorsement[]      @relation("Endorser")
+  endorsementsReceived Endorsement[]      @relation("Endorsee")
+  chats                ChatParticipant[]
+  messages             Message[]
+  tasksRequested       Task[]             @relation("TaskRequester")
+  tasksProvided        Task[]             @relation("TaskProvider")
+  reports              Report[]           @relation("Reporter")
+  reportsReceived      Report[]           @relation("ReportTarget")
+  moderationActions    ModerationAction[] @relation("Moderator")
+  moderationReceived   ModerationAction[] @relation("ModTarget")
+  notifications        Notification[]
+  digestPreferences    DigestPreference[]
+  auditLogs            AuditLog[]
+  savedPosts           SavedPost[]
+  otpRequests          OtpRequest[]
+  rentalListings       RentalListing[]
+  settings             UserSettings?
+  blockedUsers         BlockedUser[]      @relation("Blocker")
+  blockedByUsers       BlockedUser[]      @relation("Blocked")
+  eventRsvps           EventRSVP[]
+  // Phase 1-4 Relations
+  gamification         UserGamification?
+  wallet               Wallet?
+  emergencyContacts    EmergencyContact[]
+  stories              Story[]
+  carpoolListings      CarpoolListing[]
+  carpoolPassengers    CarpoolPassenger[]
+  carpoolDriving       CarpoolRide[]      @relation("CarpoolDriver")
+  preferredLanguage    String?
 
   @@index([phone])
   @@index([email])
@@ -254,6 +264,7 @@ model Neighborhood {
   rentalListings    RentalListing[]
   digestPreferences DigestPreference[]
   safetyAlerts      SafetyAlert[]
+  priceItems        PriceItem[]
 
   @@index([pincode])
   @@index([slug])
@@ -291,20 +302,20 @@ model MicroGroup {
   createdAt      DateTime     @default(now())
 
   // Relations
-  members    GroupMember[]
-  targetPosts Post[]       @relation("PostTargetGroups")
+  members     GroupMember[]
+  targetPosts Post[]        @relation("PostTargetGroups")
 
   @@index([neighborhoodId])
   @@index([buildingId])
 }
 
 model GroupMember {
-  id        String     @id @default(uuid())
-  groupId   String
-  group     MicroGroup @relation(fields: [groupId], references: [id])
-  userId    String
-  isAdmin   Boolean    @default(false)
-  joinedAt  DateTime   @default(now())
+  id       String     @id @default(uuid())
+  groupId  String
+  group    MicroGroup @relation(fields: [groupId], references: [id])
+  userId   String
+  isAdmin  Boolean    @default(false)
+  joinedAt DateTime   @default(now())
 
   @@unique([groupId, userId])
   @@index([groupId])
@@ -332,32 +343,32 @@ model Membership {
 }
 
 model Post {
-  id             String       @id @default(uuid())
-  userId         String
-  user           User         @relation(fields: [userId], references: [id])
-  neighborhoodId String
-  neighborhood   Neighborhood @relation(fields: [neighborhoodId], references: [id])
-  type           PostType
-  title          String?
-  content        String
-  images         String[]
-  tags           String[]
-  visibility     Visibility   @default(neighborhood)
-  targetGroups   MicroGroup[] @relation("PostTargetGroups")
-  latitude       Float?
-  longitude      Float?
+  id                 String       @id @default(uuid())
+  userId             String
+  user               User         @relation(fields: [userId], references: [id])
+  neighborhoodId     String
+  neighborhood       Neighborhood @relation(fields: [neighborhoodId], references: [id])
+  type               PostType
+  title              String?
+  content            String
+  images             String[]
+  tags               String[]
+  visibility         Visibility   @default(neighborhood)
+  targetGroups       MicroGroup[] @relation("PostTargetGroups")
+  latitude           Float?
+  longitude          Float?
   approximateAddress String?
-  isUrgent       Boolean      @default(false)
-  isPinned       Boolean      @default(false)
-  isHidden       Boolean      @default(false)
-  viewCount      Int          @default(0)
-  commentCount   Int          @default(0)
-  reactionCount  Int          @default(0)
-  syncStatus     String?      // queued, synced, failed
-  fingerprint    String?      // for duplicate detection
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-  expiresAt      DateTime?
+  isUrgent           Boolean      @default(false)
+  isPinned           Boolean      @default(false)
+  isHidden           Boolean      @default(false)
+  viewCount          Int          @default(0)
+  commentCount       Int          @default(0)
+  reactionCount      Int          @default(0)
+  syncStatus         String? // queued, synced, failed
+  fingerprint        String? // for duplicate detection
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  expiresAt          DateTime?
 
   // Relations
   comments      Comment[]
@@ -376,18 +387,18 @@ model Post {
 }
 
 model Comment {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   postId    String
-  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  post      Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId    String
-  user      User     @relation(fields: [userId], references: [id])
+  user      User      @relation(fields: [userId], references: [id])
   parentId  String?
-  parent    Comment? @relation("CommentReplies", fields: [parentId], references: [id])
+  parent    Comment?  @relation("CommentReplies", fields: [parentId], references: [id])
   replies   Comment[] @relation("CommentReplies")
   content   String
-  isHidden  Boolean  @default(false)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  isHidden  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([postId])
   @@index([userId])
@@ -421,13 +432,13 @@ model SavedPost {
 }
 
 model RentalListing {
-  id                String          @id @default(uuid())
-  postId            String          @unique
-  post              Post            @relation(fields: [postId], references: [id], onDelete: Cascade)
+  id                String            @id @default(uuid())
+  postId            String            @unique
+  post              Post              @relation(fields: [postId], references: [id], onDelete: Cascade)
   userId            String
-  user              User            @relation(fields: [userId], references: [id])
+  user              User              @relation(fields: [userId], references: [id])
   neighborhoodId    String
-  neighborhood      Neighborhood    @relation(fields: [neighborhoodId], references: [id])
+  neighborhood      Neighborhood      @relation(fields: [neighborhoodId], references: [id])
   propertyType      PropertyType
   bhk               String?
   rentAmount        Int
@@ -438,10 +449,10 @@ model RentalListing {
   floor             Int?
   totalFloors       Int?
   amenities         String[]
-  status            ListingStatus   @default(available)
+  status            ListingStatus     @default(available)
   contactPreference ContactPreference @default(chat)
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
 
   // Relations
   reviews Review[]
@@ -463,7 +474,7 @@ model HelperProfile {
   languages             Language[]
   hourlyRate            Int?
   monthlyRate           Int?
-  availability          Json               // WeeklySchedule
+  availability          Json // WeeklySchedule
   backgroundCheckStatus VerificationStatus @default(not_submitted)
   documentsVerified     Boolean            @default(false)
   referenceCount        Int                @default(0)
@@ -494,7 +505,7 @@ model Shop {
   description    String?
   address        String
   phone          String?
-  hours          Json?        // business hours
+  hours          Json? // business hours
   images         String[]
   isVerified     Boolean      @default(false)
   rating         Float        @default(0)
@@ -516,7 +527,7 @@ model Review {
   id              String         @id @default(uuid())
   userId          String
   user            User           @relation("ReviewAuthor", fields: [userId], references: [id])
-  targetType      String         // helper, shop, rental
+  targetType      String // helper, shop, rental
   helperProfileId String?
   helperProfile   HelperProfile? @relation(fields: [helperProfileId], references: [id])
   shopId          String?
@@ -552,12 +563,12 @@ model Endorsement {
 }
 
 model Chat {
-  id            String            @id @default(uuid())
-  type          ChatType          @default(direct)
-  taskId        String?           @unique
-  task          Task?             @relation(fields: [taskId], references: [id])
+  id            String    @id @default(uuid())
+  type          ChatType  @default(direct)
+  taskId        String?   @unique
+  task          Task?     @relation(fields: [taskId], references: [id])
   lastMessageAt DateTime?
-  createdAt     DateTime          @default(now())
+  createdAt     DateTime  @default(now())
 
   // Relations
   participants ChatParticipant[]
@@ -567,15 +578,15 @@ model Chat {
 }
 
 model ChatParticipant {
-  id         String   @id @default(uuid())
+  id         String    @id @default(uuid())
   chatId     String
-  chat       Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  chat       Chat      @relation(fields: [chatId], references: [id], onDelete: Cascade)
   userId     String
-  user       User     @relation(fields: [userId], references: [id])
-  isBlocked  Boolean  @default(false)
-  isMuted    Boolean  @default(false)
+  user       User      @relation(fields: [userId], references: [id])
+  isBlocked  Boolean   @default(false)
+  isMuted    Boolean   @default(false)
   lastReadAt DateTime?
-  joinedAt   DateTime @default(now())
+  joinedAt   DateTime  @default(now())
 
   @@unique([chatId, userId])
   @@index([chatId])
@@ -602,23 +613,23 @@ model Message {
 }
 
 model Task {
-  id               String      @id @default(uuid())
+  id               String         @id @default(uuid())
   requesterId      String
-  requester        User        @relation("TaskRequester", fields: [requesterId], references: [id])
+  requester        User           @relation("TaskRequester", fields: [requesterId], references: [id])
   providerId       String
-  provider         User        @relation("TaskProvider", fields: [providerId], references: [id])
+  provider         User           @relation("TaskProvider", fields: [providerId], references: [id])
   helperProfileId  String?
   helperProfile    HelperProfile? @relation(fields: [helperProfileId], references: [id])
   shopId           String?
-  shop             Shop?       @relation(fields: [shopId], references: [id])
+  shop             Shop?          @relation(fields: [shopId], references: [id])
   chat             Chat?
-  status           TaskStatus  @default(pending)
+  status           TaskStatus     @default(pending)
   description      String?
   agreedAmount     Int?
   scheduledAt      DateTime?
   completedAt      DateTime?
-  reviewPromptSent Boolean     @default(false)
-  createdAt        DateTime    @default(now())
+  reviewPromptSent Boolean        @default(false)
+  createdAt        DateTime       @default(now())
 
   // Relations
   reviews Review[]
@@ -629,22 +640,22 @@ model Task {
 }
 
 model Report {
-  id          String       @id @default(uuid())
-  reporterId  String
-  reporter    User         @relation("Reporter", fields: [reporterId], references: [id])
-  targetType  String       // post, comment, user, message
-  targetId    String
-  targetUser  User?        @relation("ReportTarget", fields: [targetUserId], references: [id])
+  id           String       @id @default(uuid())
+  reporterId   String
+  reporter     User         @relation("Reporter", fields: [reporterId], references: [id])
+  targetType   String // post, comment, user, message
+  targetId     String
+  targetUser   User?        @relation("ReportTarget", fields: [targetUserId], references: [id])
   targetUserId String?
-  targetPost  Post?        @relation(fields: [targetPostId], references: [id])
+  targetPost   Post?        @relation(fields: [targetPostId], references: [id])
   targetPostId String?
-  reason      String
-  description String?
-  status      ReportStatus @default(pending)
-  moderatorId String?
-  resolution  String?
-  createdAt   DateTime     @default(now())
-  resolvedAt  DateTime?
+  reason       String
+  description  String?
+  status       ReportStatus @default(pending)
+  moderatorId  String?
+  resolution   String?
+  createdAt    DateTime     @default(now())
+  resolvedAt   DateTime?
 
   @@index([status])
   @@index([targetType, targetId])
@@ -652,17 +663,17 @@ model Report {
 }
 
 model ModerationAction {
-  id          String               @id @default(uuid())
-  moderatorId String
-  moderator   User                 @relation("Moderator", fields: [moderatorId], references: [id])
-  targetType  String               // post, comment, user
-  targetId    String
-  targetUser  User?                @relation("ModTarget", fields: [targetUserId], references: [id])
+  id           String               @id @default(uuid())
+  moderatorId  String
+  moderator    User                 @relation("Moderator", fields: [moderatorId], references: [id])
+  targetType   String // post, comment, user
+  targetId     String
+  targetUser   User?                @relation("ModTarget", fields: [targetUserId], references: [id])
   targetUserId String?
-  action      ModerationActionType
-  reason      String
-  duration    Int?                 // hours for temp bans
-  createdAt   DateTime             @default(now())
+  action       ModerationActionType
+  reason       String
+  duration     Int? // hours for temp bans
+  createdAt    DateTime             @default(now())
 
   @@index([moderatorId])
   @@index([targetType, targetId])
@@ -770,16 +781,16 @@ model AuditLog {
 }
 
 model UserSettings {
-  id                String  @id @default(uuid())
-  userId            String  @unique
-  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // Notification Settings
-  pushEnabled       Boolean @default(true)
-  messageNotifs     Boolean @default(true)
-  postNotifs        Boolean @default(true)
-  safetyAlerts      Boolean @default(true)
-  emailDigest       Boolean @default(true)
+  pushEnabled   Boolean @default(true)
+  messageNotifs Boolean @default(true)
+  postNotifs    Boolean @default(true)
+  safetyAlerts  Boolean @default(true)
+  emailDigest   Boolean @default(true)
 
   // Privacy Settings
   profileVisibility String  @default("neighbors") // "neighbors" or "public"
@@ -788,11 +799,11 @@ model UserSettings {
   showLocation      Boolean @default(true)
 
   // Preferences
-  theme             String  @default("system") // "light", "dark", or "system"
-  language          String  @default("en")
+  theme    String @default("system") // "light", "dark", or "system"
+  language String @default("en")
 
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([userId])
 }
@@ -813,17 +824,17 @@ model BlockedUser {
 
 // Polls and Voting System
 model Poll {
-  id             String       @id @default(uuid())
-  postId         String       @unique
-  post           Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
-  question       String
-  allowMultiple  Boolean      @default(false)
-  showResults    Boolean      @default(true) // Show results before voting
-  endsAt         DateTime?
-  isActive       Boolean      @default(true)
-  totalVotes     Int          @default(0)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id            String    @id @default(uuid())
+  postId        String    @unique
+  post          Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  question      String
+  allowMultiple Boolean   @default(false)
+  showResults   Boolean   @default(true) // Show results before voting
+  endsAt        DateTime?
+  isActive      Boolean   @default(true)
+  totalVotes    Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relations
   options PollOption[]
@@ -864,22 +875,22 @@ model PollVote {
 
 // Events System
 model Event {
-  id             String       @id @default(uuid())
-  postId         String       @unique
-  post           Post         @relation(fields: [postId], references: [id], onDelete: Cascade)
-  title          String
-  description    String?
-  location       String?
-  latitude       Float?
-  longitude      Float?
-  startsAt       DateTime
-  endsAt         DateTime?
-  maxAttendees   Int?
-  isOnline       Boolean      @default(false)
-  onlineLink     String?
-  attendeeCount  Int          @default(0)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
+  id            String    @id @default(uuid())
+  postId        String    @unique
+  post          Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  location      String?
+  latitude      Float?
+  longitude     Float?
+  startsAt      DateTime
+  endsAt        DateTime?
+  maxAttendees  Int?
+  isOnline      Boolean   @default(false)
+  onlineLink    String?
+  attendeeCount Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   // Relations
   rsvps EventRSVP[]
@@ -906,5 +917,1345 @@ model EventRSVP {
 
   @@unique([eventId, userId])
   @@index([eventId])
+  @@index([userId])
+}
+
+// ============================================
+// PHASE 1: AI Feed, Payments, SOS, Voice, Gamification
+// ============================================
+
+// User engagement tracking for AI feed
+model UserEngagement {
+  id          String    @id @default(uuid())
+  userId      String
+  postId      String?
+  postType    PostType?
+  action      String // view, click, react, comment, share, save, hide
+  duration    Int? // seconds spent viewing
+  scrollDepth Float? // percentage
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([postId])
+  @@index([action])
+  @@index([createdAt])
+}
+
+// User interests derived from behavior
+model UserInterest {
+  id               String   @id @default(uuid())
+  userId           String
+  category         String // topic, post_type, tag, helper_skill
+  value            String
+  score            Float    @default(0)
+  interactionCount Int      @default(0)
+  lastInteraction  DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([userId, category, value])
+  @@index([userId])
+  @@index([score])
+}
+
+// Gamification - User Levels
+enum UserLevel {
+  newcomer
+  resident
+  neighbor
+  pillar
+  guardian
+  legend
+}
+
+model UserGamification {
+  id               String    @id @default(uuid())
+  userId           String    @unique
+  user             User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  level            UserLevel @default(newcomer)
+  karmaPoints      Int       @default(0)
+  totalKarmaEarned Int       @default(0)
+  currentStreak    Int       @default(0)
+  longestStreak    Int       @default(0)
+  lastActiveDate   DateTime?
+  postsCreated     Int       @default(0)
+  commentsGiven    Int       @default(0)
+  helpfulVotes     Int       @default(0)
+  eventsAttended   Int       @default(0)
+  pollsVoted       Int       @default(0)
+  referralsCount   Int       @default(0)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  // Relations
+  badges       UserBadge[]
+  karmaHistory KarmaTransaction[]
+  challenges   UserChallenge[]
+
+  @@index([karmaPoints])
+  @@index([level])
+}
+
+model Badge {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String
+  icon        String
+  category    String // community, safety, helper, social, special
+  requirement String // JSON describing unlock criteria
+  karmaReward Int      @default(0)
+  isSecret    Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  users UserBadge[]
+
+  @@index([category])
+}
+
+model UserBadge {
+  id           String           @id @default(uuid())
+  userId       String
+  gamification UserGamification @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  badgeId      String
+  badge        Badge            @relation(fields: [badgeId], references: [id])
+  earnedAt     DateTime         @default(now())
+  notified     Boolean          @default(false)
+
+  @@unique([userId, badgeId])
+  @@index([userId])
+  @@index([earnedAt])
+}
+
+model KarmaTransaction {
+  id           String           @id @default(uuid())
+  userId       String
+  gamification UserGamification @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  amount       Int
+  reason       String
+  sourceType   String? // post, comment, badge, referral, daily_login
+  sourceId     String?
+  createdAt    DateTime         @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Challenge {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  type        String // daily, weekly, community
+  target      Int // target count
+  karmaReward Int
+  startDate   DateTime
+  endDate     DateTime
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+
+  // Relations
+  participants UserChallenge[]
+
+  @@index([isActive])
+  @@index([endDate])
+}
+
+model UserChallenge {
+  id           String           @id @default(uuid())
+  userId       String
+  gamification UserGamification @relation(fields: [userId], references: [userId], onDelete: Cascade)
+  challengeId  String
+  challenge    Challenge        @relation(fields: [challengeId], references: [id])
+  progress     Int              @default(0)
+  completed    Boolean          @default(false)
+  completedAt  DateTime?
+  joinedAt     DateTime         @default(now())
+
+  @@unique([userId, challengeId])
+  @@index([userId])
+  @@index([challengeId])
+}
+
+// Payment System
+enum PaymentStatus {
+  pending
+  processing
+  completed
+  failed
+  refunded
+  cancelled
+}
+
+enum PaymentMethod {
+  upi
+  wallet
+  card
+  netbanking
+}
+
+model Wallet {
+  id        String   @id @default(uuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  balance   Int      @default(0) // in paisa
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  transactions WalletTransaction[]
+
+  @@index([userId])
+}
+
+model WalletTransaction {
+  id           String   @id @default(uuid())
+  walletId     String
+  wallet       Wallet   @relation(fields: [walletId], references: [id])
+  type         String // credit, debit
+  amount       Int // in paisa
+  description  String
+  referenceId  String?
+  balanceAfter Int
+  createdAt    DateTime @default(now())
+
+  @@index([walletId])
+  @@index([createdAt])
+}
+
+model Payment {
+  id             String        @id @default(uuid())
+  payerId        String
+  payeeId        String
+  amount         Int // in paisa
+  currency       String        @default("INR")
+  method         PaymentMethod
+  status         PaymentStatus @default(pending)
+  description    String?
+  taskId         String?
+  subscriptionId String?
+  externalId     String? // Razorpay/PayU order ID
+  externalRef    String? // UPI reference
+  metadata       Json?
+  failureReason  String?
+  createdAt      DateTime      @default(now())
+  completedAt    DateTime?
+  updatedAt      DateTime      @updatedAt
+
+  @@index([payerId])
+  @@index([payeeId])
+  @@index([status])
+  @@index([externalId])
+}
+
+// SOS Emergency System
+enum SOSStatus {
+  active
+  responded
+  resolved
+  false_alarm
+  cancelled
+}
+
+model SOSAlert {
+  id             String    @id @default(uuid())
+  userId         String
+  neighborhoodId String
+  type           String // medical, fire, crime, accident, other
+  status         SOSStatus @default(active)
+  latitude       Float
+  longitude      Float
+  address        String?
+  description    String?
+  audioUrl       String? // voice recording
+  images         String[]
+  responderCount Int       @default(0)
+  resolvedAt     DateTime?
+  cancelledAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  responders SOSResponder[]
+  updates    SOSUpdate[]
+
+  @@index([userId])
+  @@index([neighborhoodId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SOSResponder {
+  id          String    @id @default(uuid())
+  alertId     String
+  alert       SOSAlert  @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  userId      String
+  status      String // responding, arrived, helping
+  message     String?
+  latitude    Float?
+  longitude   Float?
+  respondedAt DateTime  @default(now())
+  arrivedAt   DateTime?
+
+  @@unique([alertId, userId])
+  @@index([alertId])
+  @@index([userId])
+}
+
+model SOSUpdate {
+  id        String   @id @default(uuid())
+  alertId   String
+  alert     SOSAlert @relation(fields: [alertId], references: [id], onDelete: Cascade)
+  userId    String
+  message   String
+  type      String // status_update, location_update, resolution
+  createdAt DateTime @default(now())
+
+  @@index([alertId])
+}
+
+model EmergencyContact {
+  id            String   @id @default(uuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  phone         String
+  relation      String
+  isPrimary     Boolean  @default(false)
+  canReceiveSOS Boolean  @default(true)
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+}
+
+// Voice Notes
+model VoiceNote {
+  id         String   @id @default(uuid())
+  messageId  String   @unique
+  senderId   String
+  url        String
+  duration   Int // in seconds
+  waveform   String? // JSON array for visualization
+  transcript String? // AI transcription
+  size       Int // bytes
+  createdAt  DateTime @default(now())
+
+  @@index([senderId])
+}
+
+// ============================================
+// PHASE 2: Video Verification, Smart Recs, Live Location, RWA, Interest Circles
+// ============================================
+
+// Video Verification
+enum VerificationLevel {
+  none
+  phone
+  video
+  aadhaar
+  full
+}
+
+model VideoVerification {
+  id              String             @id @default(uuid())
+  userId          String
+  status          VerificationStatus @default(pending)
+  videoUrl        String
+  selfieUrl       String?
+  aiScore         Float? // AI confidence score
+  reviewerId      String?
+  reviewerNotes   String?
+  rejectionReason String?
+  submittedAt     DateTime           @default(now())
+  reviewedAt      DateTime?
+
+  @@index([userId])
+  @@index([status])
+}
+
+// Smart Recommendations
+model RecommendationLog {
+  id        String   @id @default(uuid())
+  userId    String
+  type      String // helper, shop, rental, post, user
+  itemId    String
+  score     Float
+  reason    String // collaborative, content_based, trending, seasonal
+  shown     Boolean  @default(false)
+  clicked   Boolean  @default(false)
+  converted Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+// Live Location Sharing
+model LiveLocation {
+  id            String   @id @default(uuid())
+  userId        String
+  sessionId     String   @unique
+  latitude      Float
+  longitude     Float
+  accuracy      Float?
+  heading       Float?
+  speed         Float?
+  purpose       String // safe_walk, meetup, emergency, delivery
+  sharedWith    String[] // user IDs
+  expiresAt     DateTime
+  isActive      Boolean  @default(true)
+  lastUpdatedAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+
+  // Relations
+  history LocationHistory[]
+
+  @@index([userId])
+  @@index([sessionId])
+  @@index([isActive])
+}
+
+model LocationHistory {
+  id             String       @id @default(uuid())
+  liveLocationId String
+  liveLocation   LiveLocation @relation(fields: [liveLocationId], references: [id], onDelete: Cascade)
+  latitude       Float
+  longitude      Float
+  accuracy       Float?
+  recordedAt     DateTime     @default(now())
+
+  @@index([liveLocationId])
+  @@index([recordedAt])
+}
+
+// RWA (Resident Welfare Association) Management
+model RWA {
+  id             String    @id @default(uuid())
+  neighborhoodId String    @unique
+  name           String
+  registrationNo String?
+  address        String?
+  email          String?
+  phone          String?
+  establishedAt  DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  // Relations
+  members       RWAMember[]
+  dues          MaintenanceDue[]
+  complaints    Complaint[]
+  meetings      Meeting[]
+  documents     RWADocument[]
+  announcements RWAAnnouncement[]
+  accounts      RWAAccount[]
+  visitors      VisitorPass[]
+
+  @@index([neighborhoodId])
+}
+
+enum RWARole {
+  president
+  secretary
+  treasurer
+  committee_member
+  resident
+}
+
+model RWAMember {
+  id       String   @id @default(uuid())
+  rwaId    String
+  rwa      RWA      @relation(fields: [rwaId], references: [id], onDelete: Cascade)
+  userId   String
+  role     RWARole  @default(resident)
+  unit     String?
+  isActive Boolean  @default(true)
+  joinedAt DateTime @default(now())
+
+  @@unique([rwaId, userId])
+  @@index([rwaId])
+  @@index([userId])
+}
+
+model MaintenanceDue {
+  id          String        @id @default(uuid())
+  rwaId       String
+  rwa         RWA           @relation(fields: [rwaId], references: [id])
+  userId      String
+  unit        String
+  amount      Int // in paisa
+  dueDate     DateTime
+  status      PaymentStatus @default(pending)
+  paidAmount  Int           @default(0)
+  paidAt      DateTime?
+  paymentId   String?
+  penalty     Int           @default(0)
+  description String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  @@index([rwaId])
+  @@index([userId])
+  @@index([status])
+  @@index([dueDate])
+}
+
+enum ComplaintStatus {
+  open
+  in_progress
+  resolved
+  closed
+  rejected
+}
+
+enum ComplaintPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+model Complaint {
+  id          String            @id @default(uuid())
+  rwaId       String
+  rwa         RWA               @relation(fields: [rwaId], references: [id])
+  userId      String
+  category    String // plumbing, electrical, security, cleanliness, parking, noise, other
+  title       String
+  description String
+  images      String[]
+  priority    ComplaintPriority @default(medium)
+  status      ComplaintStatus   @default(open)
+  assignedTo  String?
+  resolution  String?
+  resolvedAt  DateTime?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  // Relations
+  updates ComplaintUpdate[]
+
+  @@index([rwaId])
+  @@index([userId])
+  @@index([status])
+  @@index([priority])
+}
+
+model ComplaintUpdate {
+  id          String           @id @default(uuid())
+  complaintId String
+  complaint   Complaint        @relation(fields: [complaintId], references: [id], onDelete: Cascade)
+  userId      String
+  message     String
+  status      ComplaintStatus?
+  createdAt   DateTime         @default(now())
+
+  @@index([complaintId])
+}
+
+model Meeting {
+  id           String   @id @default(uuid())
+  rwaId        String
+  rwa          RWA      @relation(fields: [rwaId], references: [id])
+  title        String
+  description  String?
+  agenda       String?
+  location     String?
+  isOnline     Boolean  @default(false)
+  onlineLink   String?
+  scheduledAt  DateTime
+  duration     Int? // minutes
+  minutesUrl   String?
+  recordingUrl String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // Relations
+  votes MeetingVote[]
+
+  @@index([rwaId])
+  @@index([scheduledAt])
+}
+
+model MeetingVote {
+  id          String    @id @default(uuid())
+  meetingId   String
+  meeting     Meeting   @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  question    String
+  options     String[] // JSON array of options
+  votes       Json // { optionIndex: [userIds] }
+  isAnonymous Boolean   @default(false)
+  closesAt    DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([meetingId])
+}
+
+model RWADocument {
+  id         String   @id @default(uuid())
+  rwaId      String
+  rwa        RWA      @relation(fields: [rwaId], references: [id])
+  title      String
+  category   String // bylaws, minutes, financial, notice, other
+  url        String
+  uploadedBy String
+  isPublic   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+
+  @@index([rwaId])
+  @@index([category])
+}
+
+model RWAAnnouncement {
+  id          String    @id @default(uuid())
+  rwaId       String
+  rwa         RWA       @relation(fields: [rwaId], references: [id])
+  title       String
+  content     String
+  priority    String    @default("normal") // low, normal, high, urgent
+  attachments String[]
+  publishedBy String
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([rwaId])
+  @@index([createdAt])
+}
+
+model RWAAccount {
+  id        String   @id @default(uuid())
+  rwaId     String
+  rwa       RWA      @relation(fields: [rwaId], references: [id])
+  name      String // Main Account, Sinking Fund, etc.
+  balance   Int      @default(0) // in paisa
+  bankName  String?
+  accountNo String?
+  ifsc      String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  transactions RWATransaction[]
+
+  @@index([rwaId])
+}
+
+model RWATransaction {
+  id              String     @id @default(uuid())
+  accountId       String
+  account         RWAAccount @relation(fields: [accountId], references: [id])
+  type            String // income, expense
+  category        String // maintenance, repair, salary, utility, other
+  amount          Int // in paisa
+  description     String
+  receiptUrl      String?
+  recordedBy      String
+  transactionDate DateTime
+  createdAt       DateTime   @default(now())
+
+  @@index([accountId])
+  @@index([transactionDate])
+}
+
+model VisitorPass {
+  id             String    @id @default(uuid())
+  rwaId          String
+  rwa            RWA       @relation(fields: [rwaId], references: [id])
+  hostUserId     String
+  hostUnit       String
+  visitorName    String
+  visitorPhone   String?
+  visitorVehicle String?
+  purpose        String // guest, delivery, service, other
+  passCode       String    @unique
+  validFrom      DateTime
+  validUntil     DateTime
+  checkedInAt    DateTime?
+  checkedOutAt   DateTime?
+  guardNotes     String?
+  createdAt      DateTime  @default(now())
+
+  @@index([rwaId])
+  @@index([hostUserId])
+  @@index([passCode])
+  @@index([validUntil])
+}
+
+// Interest Circles
+enum CirclePrivacy {
+  public
+  private
+  invite_only
+}
+
+model InterestCircle {
+  id             String        @id @default(uuid())
+  neighborhoodId String
+  name           String
+  description    String?
+  category       String // fitness, parenting, pets, gaming, reading, cooking, gardening, music, art, tech, other
+  icon           String?
+  coverImage     String?
+  privacy        CirclePrivacy @default(public)
+  memberCount    Int           @default(0)
+  postCount      Int           @default(0)
+  isActive       Boolean       @default(true)
+  createdById    String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // Relations
+  members CircleMember[]
+  posts   CirclePost[]
+  events  CircleEvent[]
+
+  @@index([neighborhoodId])
+  @@index([category])
+  @@index([memberCount])
+}
+
+model CircleMember {
+  id       String         @id @default(uuid())
+  circleId String
+  circle   InterestCircle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  userId   String
+  role     String         @default("member") // admin, moderator, member
+  joinedAt DateTime       @default(now())
+
+  @@unique([circleId, userId])
+  @@index([circleId])
+  @@index([userId])
+}
+
+model CirclePost {
+  id           String         @id @default(uuid())
+  circleId     String
+  circle       InterestCircle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  userId       String
+  content      String
+  images       String[]
+  isPinned     Boolean        @default(false)
+  likeCount    Int            @default(0)
+  commentCount Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  // Relations
+  comments CircleComment[]
+  likes    CircleLike[]
+
+  @@index([circleId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model CircleComment {
+  id        String     @id @default(uuid())
+  postId    String
+  post      CirclePost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  content   String
+  parentId  String?
+  createdAt DateTime   @default(now())
+
+  @@index([postId])
+  @@index([parentId])
+}
+
+model CircleLike {
+  id        String     @id @default(uuid())
+  postId    String
+  post      CirclePost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String
+  createdAt DateTime   @default(now())
+
+  @@unique([postId, userId])
+  @@index([postId])
+}
+
+model CircleEvent {
+  id            String         @id @default(uuid())
+  circleId      String
+  circle        InterestCircle @relation(fields: [circleId], references: [id], onDelete: Cascade)
+  title         String
+  description   String?
+  location      String?
+  isOnline      Boolean        @default(false)
+  onlineLink    String?
+  startsAt      DateTime
+  endsAt        DateTime?
+  maxAttendees  Int?
+  attendeeCount Int            @default(0)
+  createdById   String
+  createdAt     DateTime       @default(now())
+
+  @@index([circleId])
+  @@index([startsAt])
+}
+
+// ============================================
+// PHASE 3: Calling, Virtual Tours, Background Checks, Subscriptions, Governance
+// ============================================
+
+// Voice/Video Calling
+enum CallStatus {
+  initiated
+  ringing
+  connected
+  ended
+  missed
+  declined
+  failed
+}
+
+enum CallType {
+  voice
+  video
+}
+
+model Call {
+  id          String     @id @default(uuid())
+  callerId    String
+  receiverId  String
+  type        CallType
+  status      CallStatus @default(initiated)
+  roomId      String? // WebRTC room ID
+  startedAt   DateTime?
+  connectedAt DateTime?
+  endedAt     DateTime?
+  duration    Int? // seconds
+  endReason   String? // completed, cancelled, declined, failed
+  quality     Json? // call quality metrics
+  createdAt   DateTime   @default(now())
+
+  @@index([callerId])
+  @@index([receiverId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+// Virtual Tours for Rentals
+model VirtualTour {
+  id           String   @id @default(uuid())
+  rentalId     String
+  type         String // 360_photo, video, 3d_model
+  url          String
+  thumbnailUrl String?
+  roomName     String?
+  order        Int      @default(0)
+  viewCount    Int      @default(0)
+  createdAt    DateTime @default(now())
+
+  @@index([rentalId])
+}
+
+model TourBooking {
+  id           String    @id @default(uuid())
+  rentalId     String
+  userId       String
+  ownerId      String
+  type         String // in_person, video_call
+  scheduledAt  DateTime
+  duration     Int       @default(30) // minutes
+  status       String    @default("pending") // pending, confirmed, completed, cancelled
+  notes        String?
+  confirmedAt  DateTime?
+  cancelledAt  DateTime?
+  cancelReason String?
+  createdAt    DateTime  @default(now())
+
+  @@index([rentalId])
+  @@index([userId])
+  @@index([ownerId])
+  @@index([scheduledAt])
+}
+
+// Background Check Integration
+enum BackgroundCheckStatus {
+  not_started
+  pending
+  in_progress
+  completed
+  failed
+  expired
+}
+
+model BackgroundCheck {
+  id          String                @id @default(uuid())
+  userId      String
+  type        String // identity, address, criminal, employment
+  provider    String // internal, external_partner
+  status      BackgroundCheckStatus @default(not_started)
+  requestId   String? // external provider reference
+  result      Json? // verification results
+  score       Int? // 0-100
+  validUntil  DateTime?
+  documents   String[]
+  submittedAt DateTime?
+  completedAt DateTime?
+  createdAt   DateTime              @default(now())
+  updatedAt   DateTime              @updatedAt
+
+  @@index([userId])
+  @@index([status])
+  @@index([type])
+}
+
+// Service Subscriptions
+enum SubscriptionStatus {
+  active
+  paused
+  cancelled
+  expired
+}
+
+model ServiceSubscription {
+  id              String             @id @default(uuid())
+  userId          String
+  providerId      String
+  helperProfileId String?
+  shopId          String?
+  name            String
+  description     String?
+  frequency       String // daily, weekly, monthly
+  daysOfWeek      Int[] // 0-6 for weekly
+  timeSlot        String? // preferred time
+  amount          Int // per occurrence in paisa
+  status          SubscriptionStatus @default(active)
+  startDate       DateTime
+  endDate         DateTime?
+  nextOccurrence  DateTime?
+  pausedAt        DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  // Relations
+  occurrences SubscriptionOccurrence[]
+  payments    SubscriptionPayment[]
+
+  @@index([userId])
+  @@index([providerId])
+  @@index([status])
+  @@index([nextOccurrence])
+}
+
+model SubscriptionOccurrence {
+  id             String              @id @default(uuid())
+  subscriptionId String
+  subscription   ServiceSubscription @relation(fields: [subscriptionId], references: [id], onDelete: Cascade)
+  scheduledAt    DateTime
+  status         String              @default("scheduled") // scheduled, completed, skipped, cancelled
+  completedAt    DateTime?
+  notes          String?
+  rating         Int?
+  createdAt      DateTime            @default(now())
+
+  @@index([subscriptionId])
+  @@index([scheduledAt])
+}
+
+model SubscriptionPayment {
+  id             String              @id @default(uuid())
+  subscriptionId String
+  subscription   ServiceSubscription @relation(fields: [subscriptionId], references: [id])
+  amount         Int // in paisa
+  periodStart    DateTime
+  periodEnd      DateTime
+  status         PaymentStatus       @default(pending)
+  paymentId      String?
+  paidAt         DateTime?
+  createdAt      DateTime            @default(now())
+
+  @@index([subscriptionId])
+  @@index([status])
+}
+
+// ============================================
+// PHASE 4: Stories, Smart Home, AI Translation, Price Index, Carpool
+// ============================================
+
+// Stories/Reels
+model Story {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  neighborhoodId String
+  type           String // image, video
+  mediaUrl       String
+  thumbnailUrl   String?
+  caption        String?
+  duration       Int      @default(5) // seconds
+  viewCount      Int      @default(0)
+  replyCount     Int      @default(0)
+  isHighlight    Boolean  @default(false)
+  expiresAt      DateTime
+  createdAt      DateTime @default(now())
+
+  // Relations
+  views     StoryView[]
+  replies   StoryReply[]
+  reactions StoryReaction[]
+
+  @@index([userId])
+  @@index([neighborhoodId])
+  @@index([expiresAt])
+  @@index([createdAt])
+}
+
+model StoryView {
+  id       String   @id @default(uuid())
+  storyId  String
+  story    Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  userId   String
+  viewedAt DateTime @default(now())
+
+  @@unique([storyId, userId])
+  @@index([storyId])
+  @@index([userId])
+}
+
+model StoryReply {
+  id        String   @id @default(uuid())
+  storyId   String
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  userId    String
+  content   String
+  createdAt DateTime @default(now())
+
+  @@index([storyId])
+  @@index([userId])
+}
+
+model StoryReaction {
+  id        String   @id @default(uuid())
+  storyId   String
+  story     Story    @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  userId    String
+  emoji     String
+  createdAt DateTime @default(now())
+
+  @@unique([storyId, userId])
+  @@index([storyId])
+}
+
+model StoryHighlight {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  coverUrl  String?
+  storyIds  String[]
+  order     Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// Smart Home Integration
+model SmartHomeIntegration {
+  id           String    @id @default(uuid())
+  userId       String
+  provider     String // google_home, amazon_alexa, apple_homekit, smartthings, tuya, mi_home, philips_hue, tplink_kasa
+  accessToken  String
+  refreshToken String?
+  expiresAt    DateTime?
+  isActive     Boolean   @default(true)
+  lastSynced   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // Relations
+  devices SmartDevice[]
+
+  @@index([userId])
+  @@index([provider])
+}
+
+model SmartDevice {
+  id            String               @id @default(uuid())
+  userId        String
+  integrationId String
+  integration   SmartHomeIntegration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+  externalId    String // Device ID from provider
+  name          String
+  type          String // light, fan, ac, tv, door_lock, camera, thermostat, switch, sensor, speaker, geyser, refrigerator, washing_machine, curtain
+  room          String?
+  capabilities  Json // Array of supported actions
+  currentState  Json? // Current device state
+  isOnline      Boolean              @default(true)
+  lastSeenAt    DateTime?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+
+  // Relations
+  logs SmartDeviceLog[]
+
+  @@unique([integrationId, externalId])
+  @@index([userId])
+  @@index([type])
+  @@index([room])
+}
+
+model SmartDeviceLog {
+  id        String      @id @default(uuid())
+  deviceId  String
+  device    SmartDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  userId    String
+  action    String
+  value     Json?
+  success   Boolean     @default(true)
+  error     String?
+  createdAt DateTime    @default(now())
+
+  @@index([deviceId])
+  @@index([createdAt])
+}
+
+model SmartAutomation {
+  id            String    @id @default(uuid())
+  userId        String
+  name          String
+  trigger       Json // { type: 'time' | 'device' | 'location' | 'manual', ...params }
+  actions       Json // Array of { deviceId, command: { action, value? }, delay? }
+  isActive      Boolean   @default(true)
+  lastTriggered DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([userId])
+  @@index([isActive])
+}
+
+model SmartScene {
+  id        String   @id @default(uuid())
+  userId    String
+  name      String
+  icon      String?
+  devices   Json // Array of { deviceId, state }
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SmartHomeAlert {
+  id          String    @id @default(uuid())
+  userId      String
+  deviceId    String?
+  type        String // sos, safety_alert, visitor, delivery
+  message     String
+  priority    String // low, normal, high, critical
+  delivered   Boolean   @default(false)
+  deliveredAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+// AI Translation
+model Translation {
+  id             String   @id @default(uuid())
+  sourceText     String
+  translatedText String
+  sourceLanguage String
+  targetLanguage String
+  provider       String   @default("internal") // internal, google, azure
+  confidence     Float?
+  usageCount     Int      @default(1)
+  createdAt      DateTime @default(now())
+
+  // Relations
+  requests TranslationRequest[]
+
+  @@index([sourceText])
+  @@index([targetLanguage])
+}
+
+model TranslationRequest {
+  id             String      @id @default(uuid())
+  userId         String
+  translationId  String
+  translation    Translation @relation(fields: [translationId], references: [id])
+  sourceText     String
+  targetLanguage String
+  contentType    String?
+  contentId      String?
+  cached         Boolean     @default(false)
+  createdAt      DateTime    @default(now())
+
+  @@index([userId])
+  @@index([translationId])
+}
+
+// Local Price Index
+model PriceItem {
+  id             String       @id @default(uuid())
+  neighborhoodId String
+  neighborhood   Neighborhood @relation(fields: [neighborhoodId], references: [id])
+  name           String
+  category       String
+  unit           String
+  aliases        String[] // alternative names in different languages
+  icon           String?
+  isSeasonal     Boolean      @default(false)
+  currentPrice   Int? // in paisa - average of recent entries
+  minPrice       Int?
+  maxPrice       Int?
+  lastUpdated    DateTime?
+  createdAt      DateTime     @default(now())
+
+  // Relations
+  entries PriceEntry[]
+  alerts  PriceAlert[]
+
+  @@index([neighborhoodId])
+  @@index([category])
+  @@index([name])
+}
+
+model PriceEntry {
+  id          String    @id @default(uuid())
+  priceItemId String
+  priceItem   PriceItem @relation(fields: [priceItemId], references: [id], onDelete: Cascade)
+  userId      String
+  price       Int // in paisa
+  shopName    String?
+  shopId      String?
+  notes       String?
+  reportedAt  DateTime  @default(now())
+
+  @@index([priceItemId])
+  @@index([userId])
+  @@index([reportedAt])
+}
+
+model PriceAlert {
+  id          String    @id @default(uuid())
+  userId      String
+  priceItemId String
+  priceItem   PriceItem @relation(fields: [priceItemId], references: [id], onDelete: Cascade)
+  alertType   String // below, above
+  targetPrice Int // in paisa
+  isActive    Boolean   @default(true)
+  triggeredAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([priceItemId])
+  @@index([isActive])
+}
+
+// Carpool Matching
+model CarpoolListing {
+  id             String   @id @default(uuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id])
+  neighborhoodId String
+  type           String // offer, request
+  startLocation  String
+  startLat       Float?
+  startLng       Float?
+  endLocation    String
+  endLat         Float?
+  endLng         Float?
+  departureTime  DateTime
+  isRecurring    Boolean  @default(false)
+  recurringDays  Int[] // 0-6 for weekly
+  availableSeats Int      @default(1)
+  pricePerSeat   Int? // in paisa
+  vehicleType    String?
+  vehicleNumber  String?
+  womenOnly      Boolean  @default(false)
+  nonSmoking     Boolean  @default(false)
+  petsAllowed    Boolean  @default(false)
+  luggageAllowed Boolean  @default(true)
+  notes          String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  // Relations
+  rides            CarpoolRide[]
+  offeredMatches   CarpoolMatch[] @relation("OfferListing")
+  requestedMatches CarpoolMatch[] @relation("RequestListing")
+
+  @@index([neighborhoodId])
+  @@index([userId])
+  @@index([type])
+  @@index([departureTime])
+  @@index([isActive])
+}
+
+model CarpoolMatch {
+  id               String         @id @default(uuid())
+  offerListingId   String
+  offerListing     CarpoolListing @relation("OfferListing", fields: [offerListingId], references: [id])
+  requestListingId String
+  requestListing   CarpoolListing @relation("RequestListing", fields: [requestListingId], references: [id])
+  score            Int
+  status           String         @default("pending") // pending, accepted, rejected
+  chatId           String?
+  createdAt        DateTime       @default(now())
+
+  @@unique([offerListingId, requestListingId])
+  @@index([offerListingId])
+  @@index([requestListingId])
+  @@index([status])
+}
+
+model CarpoolRide {
+  id              String         @id @default(uuid())
+  listingId       String
+  listing         CarpoolListing @relation(fields: [listingId], references: [id])
+  driverId        String
+  driver          User           @relation("CarpoolDriver", fields: [driverId], references: [id])
+  rideDate        DateTime
+  status          String         @default("scheduled") // scheduled, in_progress, completed, cancelled
+  actualDeparture DateTime?
+  actualArrival   DateTime?
+  cancelReason    String?
+  driverRating    Int?
+  driverReview    String?
+  passengerRating Int?
+  passengerReview String?
+  createdAt       DateTime       @default(now())
+
+  // Relations
+  passengers CarpoolPassenger[]
+
+  @@index([listingId])
+  @@index([driverId])
+  @@index([rideDate])
+  @@index([status])
+}
+
+model CarpoolPassenger {
+  id             String      @id @default(uuid())
+  rideId         String
+  ride           CarpoolRide @relation(fields: [rideId], references: [id], onDelete: Cascade)
+  userId         String
+  user           User        @relation(fields: [userId], references: [id])
+  seatsBooked    Int         @default(1)
+  pickupLocation String?
+  dropLocation   String?
+  status         String      @default("confirmed") // pending, confirmed, picked_up, dropped_off, no_show, cancelled, completed, rejected
+  pickupLat      Float?
+  pickupLng      Float?
+  dropoffLat     Float?
+  dropoffLng     Float?
+  pickedUpAt     DateTime?
+  droppedOffAt   DateTime?
+  rating         Int?
+  createdAt      DateTime    @default(now())
+
+  @@unique([rideId, userId])
+  @@index([rideId])
   @@index([userId])
 }

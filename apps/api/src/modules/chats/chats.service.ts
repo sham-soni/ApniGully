@@ -411,4 +411,134 @@ export class ChatsService {
   async getMessageTemplates() {
     return MESSAGE_TEMPLATES;
   }
+
+  // Voice Notes functionality
+  async sendVoiceNote(
+    userId: string,
+    chatId: string,
+    data: {
+      url: string;
+      duration: number;
+      waveform?: string;
+      size: number;
+    },
+  ) {
+    // Verify access
+    const participant = await this.prisma.chatParticipant.findUnique({
+      where: { chatId_userId: { chatId, userId } },
+    });
+
+    if (!participant) {
+      throw new ForbiddenException('Not a participant of this chat');
+    }
+
+    if (participant.isBlocked) {
+      throw new ForbiddenException('You are blocked from this chat');
+    }
+
+    // Create message
+    const message = await this.prisma.message.create({
+      data: {
+        chatId,
+        senderId: userId,
+        content: '🎤 Voice message',
+        type: 'voice',
+        status: 'sent',
+      },
+      include: {
+        sender: {
+          select: { id: true, name: true, avatar: true },
+        },
+      },
+    });
+
+    // Create voice note record
+    await this.prisma.voiceNote.create({
+      data: {
+        messageId: message.id,
+        senderId: userId,
+        url: data.url,
+        duration: data.duration,
+        waveform: data.waveform,
+        size: data.size,
+      },
+    });
+
+    // Update chat last message time
+    await this.prisma.chat.update({
+      where: { id: chatId },
+      data: { lastMessageAt: new Date() },
+    });
+
+    // Get the full message with voice note
+    const fullMessage = await this.prisma.message.findUnique({
+      where: { id: message.id },
+      include: {
+        sender: {
+          select: { id: true, name: true, avatar: true },
+        },
+      },
+    });
+
+    const voiceNote = await this.prisma.voiceNote.findUnique({
+      where: { messageId: message.id },
+    });
+
+    return {
+      ...fullMessage,
+      voiceNote,
+    };
+  }
+
+  async getVoiceNote(messageId: string) {
+    const voiceNote = await this.prisma.voiceNote.findUnique({
+      where: { messageId },
+    });
+
+    if (!voiceNote) {
+      throw new NotFoundException('Voice note not found');
+    }
+
+    return voiceNote;
+  }
+
+  async updateVoiceNoteTranscript(messageId: string, transcript: string) {
+    return this.prisma.voiceNote.update({
+      where: { messageId },
+      data: { transcript },
+    });
+  }
+
+  async getMessagesWithVoiceNotes(
+    userId: string,
+    chatId: string,
+    page: number = 1,
+    limit: number = 50,
+    before?: string,
+  ) {
+    // Get regular messages
+    const result = await this.getMessages(userId, chatId, page, limit, before);
+
+    // Get voice notes for voice messages
+    const voiceMessageIds = result.data
+      .filter((m: any) => m.type === 'voice')
+      .map((m: any) => m.id);
+
+    if (voiceMessageIds.length > 0) {
+      const voiceNotes = await this.prisma.voiceNote.findMany({
+        where: { messageId: { in: voiceMessageIds } },
+      });
+
+      const voiceNoteMap = new Map(voiceNotes.map((vn) => [vn.messageId, vn]));
+
+      result.data = result.data.map((m: any) => {
+        if (m.type === 'voice') {
+          return { ...m, voiceNote: voiceNoteMap.get(m.id) || null };
+        }
+        return m;
+      });
+    }
+
+    return result;
+  }
 }
