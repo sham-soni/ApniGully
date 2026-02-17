@@ -443,7 +443,7 @@ export class SmartHomeService {
     }
 
     const actions = automation.actions as any[];
-    const results = [];
+    const results: Array<{ deviceId: string; success: boolean; result?: any; error?: string }> = [];
 
     for (const action of actions) {
       if (action.delay) {
@@ -522,7 +522,7 @@ export class SmartHomeService {
     }
 
     const devices = scene.devices as any[];
-    const results = [];
+    const results: Array<{ deviceId: string; success: boolean; error?: string }> = [];
 
     for (const deviceConfig of devices) {
       try {
@@ -691,11 +691,14 @@ export class SmartHomeService {
 
   // Energy monitoring
   async getEnergyUsage(userId: string, period: 'day' | 'week' | 'month') {
-    const devices = await this.prisma.smartDevice.findMany({
-      where: {
-        userId,
-        capabilities: { has: 'energy_monitoring' },
-      },
+    const allDevices = await this.prisma.smartDevice.findMany({
+      where: { userId },
+    });
+
+    // Filter devices with energy_monitoring capability
+    const devices = allDevices.filter(d => {
+      const capabilities = d.capabilities as string[] | null;
+      return capabilities?.includes('energy_monitoring');
     });
 
     // In production, aggregate actual energy data from device logs

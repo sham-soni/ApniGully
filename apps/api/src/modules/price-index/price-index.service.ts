@@ -94,8 +94,8 @@ export class PriceIndexService {
         userId,
         amount: 2,
         reason: 'price_contribution',
-        referenceType: 'price_entry',
-        referenceId: entry.id,
+        sourceType: 'price_entry',
+        sourceId: entry.id,
       },
     });
 
@@ -186,9 +186,6 @@ export class PriceIndexService {
         reportedAt: { gte: startDate },
       },
       orderBy: { reportedAt: 'asc' },
-      include: {
-        user: { select: { id: true, name: true } },
-      },
     });
 
     // Group by day for chart

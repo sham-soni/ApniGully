@@ -665,8 +665,8 @@ export class CarpoolService {
         userId,
         amount: 15,
         reason: 'carpool_completed',
-        referenceType: 'carpool_ride',
-        referenceId: rideId,
+        sourceType: 'carpool_ride',
+        sourceId: rideId,
       },
     });
 
